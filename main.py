@@ -1,16 +1,28 @@
+# main.py
 import os
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, status, Query, Request
 from fastapi.staticfiles import StaticFiles
-from health import check_app, check_db, check_front
-from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from image import save_image, get_images_for_article
-from db import get_db
-from models import Article
-from utils import slugify
+from typing import List, Optional
 
-app = FastAPI()
+from db import get_db
+from health import check_app, check_db, check_front
+from models import User, Article, Comment, Category, Tag, Attachment, Rating
+from schemas import (
+    UserRegister, UserLogin, TokenResponse, UserResponse,
+    ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
+    CommentCreate, CommentUpdate, CommentResponse,
+    CategoryCreate, CategoryResponse,
+    TagCreate, TagResponse,
+    AttachmentResponse,
+    RatingCreate, RatingResponse,
+    PaginationParams
+)
+from dependencies import get_current_user, require_auth, require_moderator, get_optional_current_user
+
+app = FastAPI(title="Dev Wiki API", version="1.0.0")
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)
@@ -30,8 +42,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ============== Обработка ошибок ==============
+
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc: HTTPException):
+    """Кастомный обработчик 404 ошибок"""
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": "Not Found",
+            "requested_path": str(request.url.path),
+            "message": "Запрошенный ресурс не найден"
+        }
+    )
+
+
+# ============== Health Check ==============
+
 @app.get("/health")
 async def health():
+    """Проверка состояния системы"""
     app_status = await check_app()
     db_status = check_db()
     front_status = await check_front()
@@ -43,106 +74,278 @@ async def health():
         "front": front_status
     }
 
-def get_article_id_by_slug(slug: str, db: Session) -> int:
-    """Получает id статьи по её slug или возвращает 404."""
-    article = db.query(Article).filter(Article.slug == slug).first()
-    if not article:
-        raise HTTPException(status_code=404, detail="Статья не найдена")
-    return article.id
 
-@app.post("/articles/{slug}/upload-image", status_code=status.HTTP_201_CREATED)
-async def upload_image(slug: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    article_id = get_article_id_by_slug(slug, db)
-    image = save_image(file, slug, article_id, db)
-    return {
-        "message": "Файл загружен",
-        "url": image.file_path,
-        "markdown": f"![{file.filename}]({image.file_path})"
-    }
+# ============== Аутентификация ==============
 
-@app.get("/articles/{slug}/images")
-def list_images(slug: str, db: Session = Depends(get_db)):
-    article_id = get_article_id_by_slug(slug, db)
-    images = get_images_for_article(article_id, db)
-    return [{"filename": img.filename, "url": img.file_path} for img in images]
+@app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    """Регистрация нового пользователя"""
+    pass
 
-class ArticleCreate(BaseModel):
-    title: str
-    content: str
 
-@app.get("/articles/")
-def list_articles(db: Session = Depends(get_db)):
-    articles = db.query(Article).order_by(Article.created_at.desc()).all()
-    return [
-        {
-            "id": a.id,
-            "title": a.title,
-            "slug": a.slug,
-            "created_at": a.created_at,
-            "updated_at": a.updated_at
-        }
-        for a in articles
-    ]
+@app.post("/auth/login", response_model=TokenResponse)
+async def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    """Авторизация пользователя (возврат JWT токена)"""
+    pass
 
-@app.post("/articles/", status_code=status.HTTP_201_CREATED)
-def create_article(article: ArticleCreate, db: Session = Depends(get_db)):
-    base_slug = slugify(article.title)
-    slug = base_slug
-    counter = 2
-    while db.query(Article).filter(Article.slug == slug).first():
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-    new_article = Article(
-        title=article.title,
-        slug=slug,
-        content=article.content
-    )
-    db.add(new_article)
-    db.commit()
-    db.refresh(new_article)
-    return {"id": new_article.id, "slug": new_article.slug, "title": new_article.title}
 
-@app.get("/articles/{slug}")
-def get_article(slug: str, db: Session = Depends(get_db)):
-    article = db.query(Article).filter(Article.slug == slug).first()
-    if not article:
-        raise HTTPException(status_code=404, detail="Статья не найдена")
-    return {
-        "id": article.id,
-        "title": article.title,
-        "slug": article.slug,
-        "content": article.content,
-        "created_at": article.created_at,
-        "updated_at": article.updated_at
-    }
+@app.post("/auth/logout")
+async def logout(current_user: User = Depends(require_auth)):
+    """Выход из системы"""
+    pass
 
-class ArticleUpdate(BaseModel):
-    title: str | None = None
-    content: str | None = None
 
-@app.put("/articles/{slug}", status_code=status.HTTP_200_OK)
-def update_article(slug: str, update: ArticleUpdate, db: Session = Depends(get_db)):
-    article = db.query(Article).filter(Article.slug == slug).first()
-    if not article:
-        raise HTTPException(status_code=404, detail="Статья не найдена")
+# ============== Статьи (Articles) ==============
 
-    if update.title is not None:
-        article.title = update.title
-        article.slug = slugify(update.title)
+@app.get("/articles", response_model=List[ArticleListItem])
+async def list_articles(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    category_id: Optional[int] = None,
+    author_id: Optional[int] = None,
+    is_published: Optional[bool] = None,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    """
+    Получение списка статей с фильтрацией и пагинацией.
+    Доступно всем пользователям (включая анонимных).
+    """
+    pass
 
-    if update.content:
-        article.content = update.content
 
-    db.commit()
-    db.refresh(article)
-    return article
+@app.get("/articles/search", response_model=List[ArticleListItem])
+async def search_articles(
+    query: str = Query(..., min_length=1),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Поиск статей по названию"""
+    pass
 
-@app.delete("/articles/{slug}")
-def delete_article(slug: str, db: Session = Depends(get_db)):
-    article = db.query(Article).filter(Article.slug == slug).first()
-    if not article:
-        raise HTTPException(status_code=404, detail="Статья не найдена")
 
-    db.delete(article)
-    db.commit()
-    return {"message": f"Статья '{slug}' удалена"}
+@app.get("/articles/{article_id}", response_model=ArticleResponse)
+async def get_article(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    """
+    Получение статьи по ID.
+    Инкрементирует счетчик просмотров.
+    """
+    pass
+
+
+@app.post("/articles", response_model=ArticleResponse, status_code=status.HTTP_201_CREATED)
+async def create_article(
+    article_data: ArticleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Создание новой статьи (требует авторизации)"""
+    pass
+
+
+@app.put("/articles/{article_id}", response_model=ArticleResponse)
+async def update_article(
+    article_id: int,
+    article_data: ArticleUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Редактирование статьи (только автор может редактировать)"""
+    pass
+
+
+@app.delete("/articles/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_article(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Удаление статьи (только автор или модератор)"""
+    pass
+
+
+@app.patch("/articles/{article_id}/publish", response_model=ArticleResponse)
+async def publish_article(
+    article_id: int,
+    publish_data: ArticlePublishUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_moderator)
+):
+    """Публикация или скрытие статьи (только модератор)"""
+    pass
+
+
+# ============== Комментарии (Comments) ==============
+
+@app.get("/articles/{article_id}/comments", response_model=List[CommentResponse])
+async def list_comments(
+    article_id: int,
+    db: Session = Depends(get_db)
+):
+    """Получение списка комментариев к статье"""
+    pass
+
+
+@app.post("/articles/{article_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+async def create_comment(
+    article_id: int,
+    comment_data: CommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Создание комментария к статье (требует авторизации)"""
+    pass
+
+
+@app.put("/comments/{comment_id}", response_model=CommentResponse)
+async def update_comment(
+    comment_id: int,
+    comment_data: CommentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Редактирование комментария (только автор)"""
+    pass
+
+
+@app.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Удаление комментария (автор или модератор)"""
+    pass
+
+
+# ============== Рейтинги (Likes/Dislikes) ==============
+
+@app.post("/articles/{article_id}/like", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
+async def like_article(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Поставить лайк статье"""
+    pass
+
+
+@app.post("/articles/{article_id}/dislike", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
+async def dislike_article(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Поставить дизлайк статье"""
+    pass
+
+
+@app.delete("/articles/{article_id}/reaction", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_article_reaction(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Удалить свою реакцию со статьи"""
+    pass
+
+
+@app.post("/comments/{comment_id}/like", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
+async def like_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Поставить лайк комментарию"""
+    pass
+
+
+@app.post("/comments/{comment_id}/dislike", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
+async def dislike_comment(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Поставить дизлайк комментарию"""
+    pass
+
+
+@app.delete("/comments/{comment_id}/reaction", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_comment_reaction(
+    comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Удалить свою реакцию с комментария"""
+    pass
+
+
+# ============== Категории и Теги ==============
+
+@app.get("/categories", response_model=List[CategoryResponse])
+async def list_categories(db: Session = Depends(get_db)):
+    """Получение списка всех категорий"""
+    pass
+
+
+@app.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+async def create_category(
+    category_data: CategoryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_moderator)
+):
+    """Создание новой категории (только модератор)"""
+    pass
+
+
+@app.get("/tags", response_model=List[TagResponse])
+async def list_tags(db: Session = Depends(get_db)):
+    """Получение списка всех тегов"""
+    pass
+
+
+@app.post("/tags", response_model=TagResponse, status_code=status.HTTP_201_CREATED)
+async def create_tag(
+    tag_data: TagCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Создание нового тега (требует авторизации)"""
+    pass
+
+
+# ============== Вложения (Attachments) ==============
+
+@app.post("/articles/{article_id}/attachments", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED)
+async def upload_attachment(
+    article_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Загрузка файла к статье"""
+    pass
+
+
+@app.get("/articles/{article_id}/attachments", response_model=List[AttachmentResponse])
+async def list_attachments(
+    article_id: int,
+    db: Session = Depends(get_db)
+):
+    """Получение списка файлов статьи"""
+    pass
+
+
+@app.delete("/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_attachment(
+    attachment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
+    """Удаление файла (автор статьи или модератор)"""
+    pass

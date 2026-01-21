@@ -1,0 +1,223 @@
+# schemas.py
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+from datetime import datetime
+
+
+# ============== Пагинация ==============
+class PaginationParams(BaseModel):
+    """Параметры пагинации"""
+    page: int = 1
+    page_size: int = 20
+
+
+class PaginatedResponse(BaseModel):
+    """Базовый ответ с пагинацией"""
+    total: int
+    page: int
+    page_size: int
+    items: List
+
+
+# ============== Пользователи ==============
+class UserRegister(BaseModel):
+    """Схема для регистрации пользователя"""
+    login: str
+    email: EmailStr
+    password: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    """Схема для авторизации"""
+    login: str
+    password: str
+
+
+class UserResponse(BaseModel):
+    """Схема ответа с данными пользователя"""
+    user_id: int
+    login: str
+    email: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    is_active: bool
+    role_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TokenResponse(BaseModel):
+    """Схема ответа с токеном"""
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+# ============== Категории ==============
+class CategoryCreate(BaseModel):
+    """Схема создания категории"""
+    name: str
+    description: Optional[str] = None
+
+
+class CategoryResponse(BaseModel):
+    """Схема ответа с данными категории"""
+    category_id: int
+    name: str
+    description: Optional[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============== Теги ==============
+class TagCreate(BaseModel):
+    """Схема создания тега"""
+    name: str
+
+
+class TagResponse(BaseModel):
+    """Схема ответа с данными тега"""
+    tag_id: int
+    name: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============== Статьи ==============
+class ArticleCreate(BaseModel):
+    """Схема создания статьи"""
+    title: str
+    content: str
+    category_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = []
+    is_published: bool = True
+
+
+class ArticleUpdate(BaseModel):
+    """Схема обновления статьи"""
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
+    is_published: Optional[bool] = None
+
+
+class ArticleResponse(BaseModel):
+    """Схема ответа с данными статьи"""
+    article_id: int
+    title: str
+    content: str
+    author_id: int
+    category_id: Optional[int]
+    is_published: bool
+    published_at: Optional[datetime]
+    created_at: datetime
+    updated_at: datetime
+    likes_count: int
+    dislikes_count: int
+    view_count: int
+
+    class Config:
+        from_attributes = True
+
+
+class ArticleListItem(BaseModel):
+    """Схема элемента списка статей (без полного содержимого)"""
+    article_id: int
+    title: str
+    author_id: int
+    category_id: Optional[int]
+    is_published: bool
+    created_at: datetime
+    updated_at: datetime
+    likes_count: int
+    dislikes_count: int
+    view_count: int
+
+    class Config:
+        from_attributes = True
+
+
+class ArticleSearchParams(BaseModel):
+    """Параметры поиска статей"""
+    query: Optional[str] = None
+    category_id: Optional[int] = None
+    author_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
+    is_published: Optional[bool] = None
+
+
+# ============== Комментарии ==============
+class CommentCreate(BaseModel):
+    """Схема создания комментария"""
+    text: str
+
+
+class CommentUpdate(BaseModel):
+    """Схема обновления комментария"""
+    text: str
+
+
+class CommentResponse(BaseModel):
+    """Схема ответа с данными комментария"""
+    comment_id: int
+    text: str
+    article_id: int
+    author_id: int
+    likes_count: int
+    dislikes_count: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============== Вложения ==============
+class AttachmentResponse(BaseModel):
+    """Схема ответа с данными вложения"""
+    attachment_id: int
+    filename: str
+    file_url: str
+    mime_type: Optional[str]
+    file_size: Optional[int]
+    article_id: int
+    uploader_id: Optional[int]
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============== Рейтинги ==============
+class RatingCreate(BaseModel):
+    """Схема создания лайка/дизлайка"""
+    type: str  # 'like' или 'dislike'
+
+
+class RatingResponse(BaseModel):
+    """Схема ответа с данными рейтинга"""
+    reaction_id: int
+    reactionable_type: str
+    reactionable_id: int
+    user_id: int
+    type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ============== Публикация/скрытие статьи ==============
+class ArticlePublishUpdate(BaseModel):
+    """Схема для публикации/скрытия статьи"""
+    is_published: bool
+
