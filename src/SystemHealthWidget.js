@@ -13,7 +13,7 @@ function StatusBadge({ label, status }) {
       </span>
       <span
         style={{
-          color,
+          color: "black",
           fontWeight: "bold",
           marginLeft: "8px",
           textAlign: "left",
