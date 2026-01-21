@@ -86,7 +86,12 @@ async def require_moderator(
     Raises:
         HTTPException: 403 если у пользователя нет прав модератора
     """
-    pass
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Недостаточно прав. Требуется роль модератора."
+        )
+    return current_user
 
 
 def get_optional_current_user(

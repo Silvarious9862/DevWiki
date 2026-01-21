@@ -29,7 +29,8 @@ class User(Base):
     last_name = Column(String(100))
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
-    role_id = Column(Integer, ForeignKey("roles.role_id"), nullable=False)
+    is_admin = Column(Boolean, default=False)
+    role_id = Column(Integer, ForeignKey("roles.role_id"), nullable=True)
 
     role = relationship("Role", back_populates="users")
     articles = relationship("Article", back_populates="author", cascade="all, delete-orphan")

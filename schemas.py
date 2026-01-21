@@ -43,7 +43,8 @@ class UserResponse(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     is_active: bool
-    role_id: int
+    is_admin: bool
+    role_id: Optional[int]
     created_at: datetime
 
     class Config:
