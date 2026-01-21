@@ -70,6 +70,20 @@ class ArticleCreate(BaseModel):
     title: str
     content: str
 
+@app.get("/articles/")
+def list_articles(db: Session = Depends(get_db)):
+    articles = db.query(Article).order_by(Article.created_at.desc()).all()
+    return [
+        {
+            "id": a.id,
+            "title": a.title,
+            "slug": a.slug,
+            "created_at": a.created_at,
+            "updated_at": a.updated_at
+        }
+        for a in articles
+    ]
+
 @app.post("/articles/", status_code=status.HTTP_201_CREATED)
 def create_article(article: ArticleCreate, db: Session = Depends(get_db)):
     base_slug = slugify(article.title)
