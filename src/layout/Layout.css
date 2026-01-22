@@ -1,0 +1,160 @@
+/* src/layout/Layout.css */
+
+/* Глобальные переменные цветов (темная тема по мокапу) */
+:root {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #212121;
+  --bg-header: #0d0d0d;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #666666;
+  
+  --accent-primary: #ff6b35; /* оранжевый акцент */
+  --accent-secondary: #ffa726;
+  
+  --border-color: #333333;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Основная раскладка */
+.app-root {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 70px); /* минус высота Header */
+}
+
+/* Header */
+.header {
+  height: 70px;
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--accent-primary);
+  margin-right: auto;
+}
+
+.header-search {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 24px;
+}
+
+.search-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-profile {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.theme-toggle:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding-top: 24px;
+}
+
+.sidebar-nav {
+  padding: 0 16px;
+}
+
+.sidebar-link {
+  display: block;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.sidebar-link-active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.sidebar-link-active:hover {
+  background: var(--accent-secondary);
+}
+
+/* Основной контент */
+.app-content {
+  flex: 1;
+  padding: 32px;
+  background: var(--bg-primary);
+  overflow-y: auto;
+}
+
+.app-content > h1 {
+  margin: 0 0 24px 0;
+  font-size: 32px;
+  color: var(--text-primary);
+}
