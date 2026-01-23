@@ -3,10 +3,10 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const menuItems = [
-  { path: "/", label: "Dashboard" },
-  { path: "/articles", label: "Articles" },
+  { path: "/", label: "Главная" },
+  { path: "/articles", label: "Статьи" },
   { path: "/faq", label: "FAQ" },
-  { path: "/about", label: "About" },
+  { path: "/about", label: "О нас" },
 ];
 
 function Sidebar() {

@@ -1,0 +1,23 @@
+/* Глобальные переменные цветов (темная тема по мокапу) */
+:root {
+  --bg-primary: #080b12;
+  --bg-secondary: #0c1319;
+  --bg-card: #0f131c;
+  --bg-header: #ffffff;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #666666;
+  
+  --accent-primary: #ff7700; /* оранжевый акцент */
+  --accent-secondary: #ffa726;
+  
+  --border-color: #333333;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+*,
+*::before,
+*::after {
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}

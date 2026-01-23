@@ -1,49 +1,10 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Стили для страницы 404 */
 .not-found-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 70vh;
   padding: 20px;
   text-align: center;
 }
@@ -52,31 +13,31 @@
   font-size: 8rem;
   font-weight: bold;
   margin: 0;
-  color: #282c34;
+  color: var(--text-primary);
   line-height: 1;
 }
 
 .not-found-subtitle {
   font-size: 2rem;
   margin: 20px 0;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .not-found-message {
   font-size: 1.2rem;
   margin: 20px 0;
-  color: #333;
+  color: var(--text-secondary);
 }
 
 .not-found-uri {
   display: inline-block;
   padding: 4px 12px;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
+  background-color: var(--bg-card);
+  border: 1px solid var(--bg-primary);
   border-radius: 4px;
   font-family: 'Courier New', monospace;
   font-size: 1rem;
-  color: #d32f2f;
+  color: var(--accent-primary);
   margin-left: 8px;
 }
 
@@ -84,8 +45,8 @@
   display: inline-block;
   margin-top: 30px;
   padding: 12px 24px;
-  background-color: #61dafb;
-  color: #282c34;
+  background-color: var(--accent-primary);
+  color: var(--text-primary);
   text-decoration: none;
   border-radius: 4px;
   font-weight: bold;

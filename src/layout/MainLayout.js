@@ -11,7 +11,6 @@ function MainLayout({ children }) {
 
       <div className="app-body">
         <Sidebar />
-
         <main className="app-content">
           {children}
         </main>

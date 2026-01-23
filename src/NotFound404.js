@@ -1,5 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
-import "./App.css";
+import "./NotFound404.css";
 
 function NotFound404() {
   const location = useLocation();

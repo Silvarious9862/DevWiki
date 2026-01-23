@@ -1,23 +1,5 @@
 /* src/layout/Layout.css */
 
-/* Глобальные переменные цветов (темная тема по мокапу) */
-:root {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #1a1a1a;
-  --bg-card: #212121;
-  --bg-header: #0d0d0d;
-  
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --text-muted: #666666;
-  
-  --accent-primary: #ff6b35; /* оранжевый акцент */
-  --accent-secondary: #ffa726;
-  
-  --border-color: #333333;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
 /* Основная раскладка */
 .app-root {
   min-height: 100vh;
@@ -27,48 +9,83 @@
   flex-direction: column;
 }
 
-.app-body {
-  display: flex;
-  flex: 1;
-  min-height: calc(100vh - 70px); /* минус высота Header */
-}
-
 /* Header */
 .header {
   height: 70px;
-  background: var(--bg-header);
-  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(
+    135deg,
+    rgba(12, 19, 25, 0.95) 0%,
+    rgba(8, 11, 18, 0.98) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(51, 51, 51, 0.3);
   display: flex;
   align-items: center;
   padding: 0 24px;
   box-shadow: var(--shadow);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 10;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: auto;
 }
 
 .header-logo {
   font-size: 24px;
   font-weight: bold;
   color: var(--accent-primary);
-  margin-right: auto;
+  margin-right: 65px;
+  font-family: "Krona One", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .header-search {
   flex: 1;
-  max-width: 600px;
-  margin: 0 24px;
+  max-width: 300px;
+  margin-right: auto;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  color: var(--text-muted)
 }
 
 .search-input {
   width: 100%;
   height: 40px;
-  padding: 0 16px;
+  padding: 0 16px 0 32px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 45px;
   color: var(--text-primary);
   font-size: 14px;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;            /* чтобы был чуть бледнее текста */
+  font-size: 14px; 
+}
+
+.search-input:hover {
+  outline: none;
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
 }
 
 .search-input:focus {
@@ -88,61 +105,109 @@
   color: var(--text-secondary);
 }
 
-.theme-toggle {
-  width: 40px;
-  height: 40px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  color: var(--text-secondary);
+.theme-switcher {
+  border: none;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
+}
+
+.theme-track {
+  position: relative;
+  width: 80px;          /* 40 + 40 */
+  height: 40px;
+  border-radius: 12px;
+  background: var(--bg-card);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  gap: 0;               /* иконки ровно по ячейкам */
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.theme-toggle:hover {
-  background: var(--accent-primary);
-  color: white;
+.theme-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;              /* старт — левая половина */
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #1b2333;
+  transition: transform 0.2s ease;
 }
+
+/* когда включён светлый режим — сдвигаем вправо */
+.theme-light .theme-thumb {
+  transform: translateX(40px);
+}
+
+.theme-icon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.theme-icon svg {
+  width: 28px;
+  height: 28px;
+  color: var(--text-muted);
+}
+
+/* можно чуть подсветить активную сторону */
+.theme-dark .theme-icon-night svg {
+  color: var(--text-secondary);
+}
+
+.theme-light .theme-icon-day svg {
+  color: var(--text-secondary);
+}
+
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
+  width: 160px;
   background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
-  padding-top: 24px;
+  /*border-right: 1px solid var(--border-color);*/
+  padding: 24px 16px 16px;
 }
 
 .sidebar-nav {
-  padding: 0 16px;
+  padding: 0;
 }
 
 .sidebar-link {
-  display: block;
-  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
   color: var(--text-secondary);
   text-decoration: none;
-  border-radius: 8px;
+  
   margin-bottom: 8px;
   font-size: 16px;
   font-weight: 500;
   transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 }
 
 .sidebar-link:hover {
   background: var(--bg-card);
-  color: var(--text-primary);
+  color: var(--accent-secondary);
 }
 
 .sidebar-link-active {
-  background: var(--accent-primary);
-  color: white;
+  border-left-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: transparent; /* без заливки */
 }
 
 .sidebar-link-active:hover {
-  background: var(--accent-secondary);
+  background: transparent;
+  color: var(--accent-secondary);
 }
 
 /* Основной контент */
