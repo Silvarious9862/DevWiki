@@ -7,10 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from db import get_db
-from health import check_app, check_db, check_front
-from models import User, Article, Comment, Category, Tag, Attachment, Rating
-from schemas import (
+from app.articles import router as articles_router
+from app.auth import router as auth_router
+from app.db import get_db
+from app.health import check_app, check_db, check_front
+from app.health import router as health_router
+from app.models import User, Article, Comment, Category, Tag, Attachment, Rating
+from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
     ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
     CommentCreate, CommentUpdate, CommentResponse,
@@ -20,9 +23,12 @@ from schemas import (
     RatingCreate, RatingResponse,
     PaginationParams
 )
-from dependencies import get_current_user, require_auth, require_moderator, get_optional_current_user
+from app.dependencies import get_current_user, require_auth, require_moderator, get_optional_current_user
 
-app = FastAPI(title="Dev Wiki API", version="1.0.0")
+app = FastAPI(title="Dev Wiki API", version="0.1.1")
+app.include_router(health_router)
+app.include_router(auth_router)
+app.include_router(articles_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)
@@ -48,51 +54,16 @@ app.add_middleware(
 @app.exception_handler(404)
 async def custom_404_handler(request: Request, exc: HTTPException):
     """Кастомный обработчик 404 ошибок"""
+    detail = exc.detail or "Not Found"
+
     return JSONResponse(
         status_code=404,
         content={
-            "detail": "Not Found",
+            "detail": detail,
             "requested_path": str(request.url.path),
             "message": "Запрошенный ресурс не найден"
         }
     )
-
-
-# ============== Health Check ==============
-
-@app.get("/health")
-async def health():
-    """Проверка состояния системы"""
-    app_status = await check_app()
-    db_status = check_db()
-    front_status = await check_front()
-
-    return {
-        "system": "wiki",
-        "app": app_status,
-        "db": db_status,
-        "front": front_status
-    }
-
-
-# ============== Аутентификация ==============
-
-@app.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """Регистрация нового пользователя"""
-    pass
-
-
-@app.post("/auth/login", response_model=TokenResponse)
-async def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    """Авторизация пользователя (возврат JWT токена)"""
-    pass
-
-
-@app.post("/auth/logout")
-async def logout(current_user: User = Depends(require_auth)):
-    """Выход из системы"""
-    pass
 
 
 # ============== Статьи (Articles) ==============

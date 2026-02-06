@@ -1,5 +1,4 @@
-# schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 
@@ -37,18 +36,16 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     """Схема ответа с данными пользователя"""
+    model_config = ConfigDict(from_attributes=True)
+
     user_id: int
     login: str
     email: str
     first_name: Optional[str]
     last_name: Optional[str]
     is_active: bool
-    is_admin: bool
     role_id: Optional[int]
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class TokenResponse(BaseModel):
@@ -67,13 +64,12 @@ class CategoryCreate(BaseModel):
 
 class CategoryResponse(BaseModel):
     """Схема ответа с данными категории"""
+    model_config = ConfigDict(from_attributes=True)
+
     category_id: int
     name: str
     description: Optional[str]
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ============== Теги ==============
@@ -84,12 +80,11 @@ class TagCreate(BaseModel):
 
 class TagResponse(BaseModel):
     """Схема ответа с данными тега"""
+    model_config = ConfigDict(from_attributes=True)
+
     tag_id: int
     name: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ============== Статьи ==============
@@ -113,6 +108,8 @@ class ArticleUpdate(BaseModel):
 
 class ArticleResponse(BaseModel):
     """Схема ответа с данными статьи"""
+    model_config = ConfigDict(from_attributes=True)
+
     article_id: int
     title: str
     content: str
@@ -126,12 +123,11 @@ class ArticleResponse(BaseModel):
     dislikes_count: int
     view_count: int
 
-    class Config:
-        from_attributes = True
-
 
 class ArticleListItem(BaseModel):
     """Схема элемента списка статей (без полного содержимого)"""
+    model_config = ConfigDict(from_attributes=True)
+
     article_id: int
     title: str
     author_id: int
@@ -142,9 +138,6 @@ class ArticleListItem(BaseModel):
     likes_count: int
     dislikes_count: int
     view_count: int
-
-    class Config:
-        from_attributes = True
 
 
 class ArticleSearchParams(BaseModel):
@@ -169,6 +162,8 @@ class CommentUpdate(BaseModel):
 
 class CommentResponse(BaseModel):
     """Схема ответа с данными комментария"""
+    model_config = ConfigDict(from_attributes=True)
+
     comment_id: int
     text: str
     article_id: int
@@ -178,13 +173,12 @@ class CommentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 # ============== Вложения ==============
 class AttachmentResponse(BaseModel):
     """Схема ответа с данными вложения"""
+    model_config = ConfigDict(from_attributes=True)
+
     attachment_id: int
     filename: str
     file_url: str
@@ -193,9 +187,6 @@ class AttachmentResponse(BaseModel):
     article_id: int
     uploader_id: Optional[int]
     uploaded_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ============== Рейтинги ==============
@@ -206,6 +197,8 @@ class RatingCreate(BaseModel):
 
 class RatingResponse(BaseModel):
     """Схема ответа с данными рейтинга"""
+    model_config = ConfigDict(from_attributes=True)
+
     reaction_id: int
     reactionable_type: str
     reactionable_id: int
@@ -213,12 +206,8 @@ class RatingResponse(BaseModel):
     type: str
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
 
 # ============== Публикация/скрытие статьи ==============
 class ArticlePublishUpdate(BaseModel):
     """Схема для публикации/скрытия статьи"""
     is_published: bool
-

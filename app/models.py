@@ -27,9 +27,8 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     first_name = Column(String(100))
     last_name = Column(String(100))
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.now)
     is_active = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
     role_id = Column(Integer, ForeignKey("roles.role_id"), nullable=True)
 
     role = relationship("Role", back_populates="users")
@@ -46,7 +45,7 @@ class Category(Base):
     category_id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), unique=True, nullable=False, index=True)
     description = Column(String(255))
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.now)
 
     articles = relationship("Article", back_populates="category")
 
@@ -57,7 +56,7 @@ class Tag(Base):
 
     tag_id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, nullable=False, index=True)
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.now)
 
     article_tags = relationship("ArticleTag", back_populates="tag", cascade="all, delete-orphan")
 
@@ -111,8 +110,8 @@ class Comment(Base):
     author_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     likes_count = Column(Integer, default=0)
     dislikes_count = Column(Integer, default=0)
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
-    updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.now)
+    updated_at = Column(TIMESTAMP, default=datetime.now, onupdate=datetime.now)
 
     article = relationship("Article", back_populates="comments")
     author = relationship("User", back_populates="comments")
@@ -147,7 +146,7 @@ class Rating(Base):
     reactionable_id = Column(Integer, nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     type = Column(String(20), nullable=False)  # 'like' или 'dislike'
-    created_at = Column(TIMESTAMP, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP, default=datetime.now)
 
     user = relationship("User", back_populates="ratings")
     article = relationship("Article", back_populates="ratings",
