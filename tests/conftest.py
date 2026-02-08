@@ -2,7 +2,8 @@ import os
 import sys
 
 import pytest
-from sqlalchemy import create_engine
+import pathlib
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
 
@@ -18,10 +19,19 @@ TEST_DATABASE_URL = "postgresql+psycopg2://wiki_user:wikidb@192.168.100.10:5432/
 
 engine = create_engine(TEST_DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+INIT_DATA_SQL = pathlib.Path("init_data.sql")
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
     Base.metadata.create_all(bind=engine)
+
+    # наполняем начальными данными
+    if INIT_DATA_SQL.exists():
+        sql = INIT_DATA_SQL.read_text(encoding="utf-8")
+        with engine.connect() as conn:
+            conn.execute(text(sql))
+            conn.commit()
+
     yield
     Base.metadata.drop_all(bind=engine)
 
