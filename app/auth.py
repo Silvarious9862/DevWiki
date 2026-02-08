@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 import bcrypt
 
 from app.db import get_db
-from app.models import User
+from app.models import User, Role
 from app.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -77,6 +77,13 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     # Хешируем пароль
     password_hash = hash_password(user_data.password)
 
+    user_role = db.query(Role).filter(Role.name == 'user').first()
+    if not user_role:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Роль 'user' не найдена в системе",
+        )
+
     # Создаем пользователя (по умолчанию активный, без роли / роль задашь позже)
     new_user = User(
         login=user_data.login,
@@ -85,7 +92,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         is_active=True,
-        role_id=1,
+        role_id=user_role.role_id,
     )
 
     db.add(new_user)
