@@ -54,5 +54,5 @@
 }
 
 .not-found-link:hover {
-  background-color: #4fa8c5;
+  background-color: var(--accent-secondary);
 }
