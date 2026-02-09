@@ -115,6 +115,7 @@ class ArticleResponse(BaseModel):
     content: str
     author_id: int
     category_id: Optional[int]
+    category_name: Optional[str] = None
     is_published: bool
     published_at: Optional[datetime]
     created_at: datetime
@@ -131,7 +132,11 @@ class ArticleListItem(BaseModel):
     article_id: int
     title: str
     author_id: int
+    author_login: str | None = None
+    author_first_name: str | None = None
+    author_last_name: str | None = None
     category_id: Optional[int]
+    category_name: Optional[str] = None
     is_published: bool
     created_at: datetime
     updated_at: datetime

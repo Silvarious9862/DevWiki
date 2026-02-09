@@ -5,12 +5,12 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy import or_, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app import models, schemas
 from app.db import get_db
 from app.dependencies import get_current_user, get_optional_current_user, require_moderator
-from app.models import User, ArticleTag
+from app.models import User, ArticleTag, Category
 
 router = APIRouter(
     prefix="/articles",
@@ -27,21 +27,26 @@ def list_articles(
     query: Optional[str] = Query(None),
     category_id: Optional[int] = Query(None),
     author_id: Optional[int] = Query(None),
-    tag_ids: Optional[List[int]] = Query(None),   # пока игнорируем в реализации
+    tag_ids: Optional[List[int]] = Query(None),
     is_published: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    """
-    GET /articles — список статей с пагинацией и фильтрами.
-    Доступен анонимно. Обычный пользователь видит только опубликованные статьи.
-    Модератор может дополнительно фильтровать по is_published.
-    """
-    q = db.query(models.Article)
+    # базовый запрос сразу с join по автору
+    q = (
+        db.query(
+            models.Article,
+            User.login.label("author_login"),
+            User.first_name.label("author_first_name"),
+            User.last_name.label("author_last_name"),
+            Category.description.label("category_name")
+        )
+        .join(User, User.user_id == models.Article.author_id)
+        .outerjoin(Category, Category.category_id == models.Article.category_id)
+    )
 
-    # Определяем, модератор ли
     is_moderator = (
         current_user is not None
         and current_user.role is not None
@@ -49,14 +54,11 @@ def list_articles(
     )
 
     if not is_moderator:
-        # Анонимы и обычные пользователи видят только опубликованные
         q = q.filter(models.Article.is_published.is_(True))
     else:
-        # Модератор может фильтровать по is_published, если параметр задан
         if is_published is not None:
             q = q.filter(models.Article.is_published == is_published)
 
-    # Поиск по строке (title + content)
     if query:
         like_expr = f"%{query}%"
         q = q.filter(
@@ -66,28 +68,49 @@ def list_articles(
             )
         )
 
-    # Фильтр по категории
     if category_id is not None:
         q = q.filter(models.Article.category_id == category_id)
 
-    # Фильтр по автору
     if author_id is not None:
         q = q.filter(models.Article.author_id == author_id)
 
-    # Фильтр по тегам
     if tag_ids:
         q = (
             q.join(ArticleTag, ArticleTag.article_id == models.Article.article_id)
-             .filter(ArticleTag.tag_id.in_(tag_ids))
-             .group_by(models.Article.article_id)
+            .filter(ArticleTag.tag_id.in_(tag_ids))
+            .group_by(models.Article.article_id)
         )
-    
-    # Пагинация
+
     offset = (page - 1) * limit
     q = q.order_by(models.Article.created_at.desc())
     articles = q.offset(offset).limit(limit).all()
 
-    return articles or []
+    rows = q.offset(offset).limit(limit).all()
+
+    items: list[schemas.ArticleListItem] = []
+    for article, author_login, author_first_name, author_last_name, category_name in rows:
+        items.append(
+            schemas.ArticleListItem(
+                article_id=article.article_id,
+                title=article.title,
+                author_id=article.author_id,
+                author_login=author_login,
+                author_first_name=author_first_name,
+                author_last_name=author_last_name,
+                category_id=article.category_id,
+                category_name=category_name,
+                is_published=article.is_published,
+                created_at=article.created_at,
+                updated_at=article.updated_at,
+                likes_count=article.likes_count,
+                dislikes_count=article.dislikes_count,
+                view_count=article.view_count,
+            )
+        )
+
+    return items
+
+
 
 @router.get(
     "/{article_id}",
@@ -98,14 +121,12 @@ def get_article(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    """
-    GET /articles/{id} — детальная статья.
-    Аноним/обычный пользователь: только опубликованные статьи.
-    Модератор: может видеть также неопубликованные.
-    """
-    article = db.query(models.Article).filter(
-        models.Article.article_id == article_id
-    ).first()
+    article = (
+        db.query(models.Article)
+        .options(joinedload(models.Article.category))
+        .filter(models.Article.article_id == article_id)
+        .first()
+    )
 
     if article is None:
         raise HTTPException(
@@ -119,20 +140,26 @@ def get_article(
         and current_user.role.name == "moderator"
     )
 
-    # Если статья не опубликована, доступ только модератору
     if not article.is_published and not is_moderator:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Статья не найдена",
         )
 
-    # Простейший учёт просмотра (без таймаута/уникальности)
     article.view_count = (article.view_count or 0) + 1
     db.add(article)
     db.commit()
     db.refresh(article)
 
-    return article
+    return schemas.ArticleResponse(
+        **article.__dict__,
+        category_name=(
+            article.category.description
+            if getattr(article, "category", None)
+            else None
+        ),
+    )
+
 
 
 @router.post(
