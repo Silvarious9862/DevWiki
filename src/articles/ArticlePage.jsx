@@ -1,3 +1,4 @@
+// src/articles/ArticlePage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
@@ -19,7 +20,7 @@ export default function ArticlePage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getArticle(id); // здесь уже есть category_id и category_name
+        const data = await getArticle(id);
         if (!cancelled) {
           setArticle(data);
 
@@ -45,9 +46,9 @@ export default function ArticlePage() {
 
     return () => {
       cancelled = true;
-      setItems([]); // очищаем крошки при уходе
+      setItems([]);
     };
-  }, [id]); // только id
+  }, [id, getArticle, setItems]); // теперь deps полные и безопасные
 
   if (loading) return <div>Загрузка…</div>;
   if (error) return <div>{error}</div>;
