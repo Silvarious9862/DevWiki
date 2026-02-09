@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { API_BASE } from "../config/api";
 
 const AuthContext = createContext(null);
 
-const API_BASE = "http://192.168.100.20:8000";
 const TOKEN_KEY = "devwiki_token";
 const USER_KEY = "devwiki_user";
 

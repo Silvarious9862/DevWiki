@@ -1,0 +1,68 @@
+.ArticlesListPage {
+  padding: 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ArticlesListPage__header {
+  margin-bottom: 16px;
+}
+
+.ArticlesListPage__header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ArticlesListPage__tableWrapper {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.ArticlesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ArticlesTable thead {
+  background: var(--bg-secondary);
+}
+
+.ArticlesTable th,
+.ArticlesTable td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.ArticlesTable th {
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ArticlesTable td {
+  color: var(--text-primary);
+}
+
+.ArticlesTable tbody tr:hover {
+  background: var(--bg-secondary);
+  cursor: pointer;
+}
+
+.ArticlesTable__titleLink {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.ArticlesTable__row {
+  cursor: pointer;
+}
+
+.ArticlesTable__row:hover {
+  background: var(--bg-secondary);
+}
