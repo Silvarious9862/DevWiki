@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
 
+
 export default function ArticlePage() {
   const { id } = useParams();
   const { getArticle } = useApi();
@@ -48,7 +49,7 @@ export default function ArticlePage() {
       cancelled = true;
       setItems([]);
     };
-  }, [id, getArticle, setItems]); // теперь deps полные и безопасные
+  }, [id, getArticle, setItems]); 
 
   if (loading) return <div>Загрузка…</div>;
   if (error) return <div>{error}</div>;

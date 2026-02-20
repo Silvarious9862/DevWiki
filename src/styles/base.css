@@ -1,4 +1,4 @@
-/* Глобальные переменные цветов (темная тема по мокапу) */
+/* Глобальные переменные цветов */
 :root {
   --bg-primary: #080b12;
   --bg-secondary: #0c1319;
@@ -16,8 +16,9 @@
   --text-secondary: #b0b0b0;
   --text-muted: #666666;
   
-  --accent-primary: #ff7700; /* оранжевый акцент */
+  --accent-primary: #ff7700; 
   --accent-secondary: #ffa726;
+  --accent-muted: #888888;
   
   --border-color: #333333;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -51,6 +52,7 @@
 
   --accent-primary: #ff7700;
   --accent-secondary: #ffa726;
+  --accent-muted: #d1d5db;
 
   --border-color: #e5e7eb;
   --shadow: 0 4px 14px rgba(15, 23, 42, 0.08);

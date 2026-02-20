@@ -1,0 +1,184 @@
+/* src/articles/ArticleEditor.css */
+
+.ArticleEditorPage {
+  padding: 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+.ArticleEditorPage__header {
+  margin-bottom: 16px;
+}
+
+.ArticleEditorPage__header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.ArticleEditorPage__subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Карточка редактора */
+.ArticleEditorPage__card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  max-width: 960px;
+}
+
+/* Ошибка */
+.ArticleEditorPage__error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+/* Поля формы */
+.ArticleEditorForm__field {
+  margin-bottom: 16px;
+}
+
+.ArticleEditorForm__label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.ArticleEditorForm__input,
+.ArticleEditorForm__textarea {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.ArticleEditorForm__input:focus,
+.ArticleEditorForm__textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-secondary);
+}
+
+.ArticleEditorForm__textarea {
+  resize: vertical;
+  min-height: 260px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  line-height: 1.5;
+}
+
+/* низ формы */
+
+.ArticleEditorForm__footerRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.ArticleEditorForm__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* wrapper для split-кнопки и меню */
+.ArticleEditorForm__splitButtonWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* split-кнопка: две части */
+.ArticleEditorSplitButton__main,
+.ArticleEditorSplitButton__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  height: 36px;
+}
+
+/* левая часть – текст */
+.ArticleEditorSplitButton__main {
+  padding: 0 14px 0 16px;
+  border-radius: 999px 0 0 999px;
+}
+
+/* правая часть – стрелка, визуальный разделитель */
+.ArticleEditorSplitButton__toggle {
+  width: 32px;
+  padding: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+/* hover только по основной части */
+.ArticleEditorSplitButton__main:hover {
+  /* фон/цвет задаются через sx, здесь не трогаем,
+     чтобы disabled из sx не ломался */
+}
+
+/* hover только по стрелке – подсветка только правой части */
+.ArticleEditorSplitButton__toggle:hover {
+  /* фон/цвет тоже через sx; если нужно,
+     можно добавить лёгкий filter или box-shadow */
+}
+
+/* активное состояние стрелки при открытом меню */
+.ArticleEditorSplitButton__toggle--active {
+  /* фон задаётся через sx (accent-secondary),
+     здесь можно при желании добавить outline */
+}
+
+/* выпадающее меню */
+.ArticleEditorForm__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  min-width: 220px;
+  z-index: 20;
+  padding: 4px 0;
+}
+
+.ArticleEditorForm__menuItem {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+}
+
+.ArticleEditorForm__menuItem:hover {
+  background: var(--accent-primary);
+}
+
+.ArticleEditorForm__menuItem:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+

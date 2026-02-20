@@ -6,6 +6,7 @@ import { BreadcrumbProvider } from "./layout/BreadcrumbContext";
 import { AuthProvider } from "./auth/AuthContext";
 import ArticlesListPage from "./articles/ArticlesListPage";
 import ArticlePage from "./articles/ArticlePage";
+import ArticleEditor from "./articles/ArticleEditor"
 
 function App() {
   return (
@@ -40,6 +41,16 @@ function App() {
               element={
                 <MainLayout>
                   <ArticlePage />
+                </MainLayout>
+              }
+            />
+
+            { /* создать статью */} 
+            <Route
+              path="/articles/new"
+              element={
+                <MainLayout>
+                  <ArticleEditor />
                 </MainLayout>
               }
             />

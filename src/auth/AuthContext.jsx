@@ -4,20 +4,24 @@ import { API_BASE } from "../config/api";
 const AuthContext = createContext(null);
 
 const TOKEN_KEY = "devwiki_token";
+const REFRESH_KEY = "devwiki_refresh_token";
 const USER_KEY = "devwiki_user";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
   const isAuth = Boolean(token && user);
 
   // Восстановление сессии при загрузке
   useEffect(() => {
     const savedToken = window.localStorage.getItem(TOKEN_KEY);
+    const savedRefresh = window.localStorage.getItem(REFRESH_KEY);
     const savedUser = window.localStorage.getItem(USER_KEY);
 
-    if (savedToken && savedUser) {
+    if (savedToken && savedRefresh && savedUser) {
       setToken(savedToken);
+      setRefreshToken(savedRefresh);
       try {
         setUser(JSON.parse(savedUser));
       } catch (e) {
@@ -47,10 +51,14 @@ export function AuthProvider({ children }) {
       throw new Error(message);
     }
 
-    const data = await resp.json(); // { access_token, token_type, user }
+    // { access_token, refresh_token, token_type, user }
+    const data = await resp.json();
     setToken(data.access_token);
+    setRefreshToken(data.refresh_token);
     setUser(data.user);
+
     window.localStorage.setItem(TOKEN_KEY, data.access_token);
+    window.localStorage.setItem(REFRESH_KEY, data.refresh_token);
     window.localStorage.setItem(USER_KEY, JSON.stringify(data.user));
   }
 
@@ -86,6 +94,30 @@ export function AuthProvider({ children }) {
     await login(loginValue, password);
   }
 
+  async function refresh() {
+    if (!refreshToken) {
+      await logout();
+      return null;
+    }
+
+    const resp = await fetch(API_BASE + "/auth/refresh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!resp.ok) {
+      // refresh тоже протух/невалиден — выходим
+      await logout();
+      return null;
+    }
+
+    const data = await resp.json(); // { access_token, token_type }
+    setToken(data.access_token);
+    window.localStorage.setItem(TOKEN_KEY, data.access_token);
+    return data.access_token;
+  }
+
   async function logout() {
     if (token) {
       try {
@@ -101,21 +133,29 @@ export function AuthProvider({ children }) {
     }
 
     setToken(null);
+    setRefreshToken(null);
     setUser(null);
     window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(REFRESH_KEY);
     window.localStorage.removeItem(USER_KEY);
   }
 
   const value = {
     user,
     token,
+    refreshToken,
     isAuth,
     login,
     register,
+    refresh,
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
