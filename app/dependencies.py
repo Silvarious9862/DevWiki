@@ -102,18 +102,37 @@ async def get_optional_current_user(
     db: Session = Depends(get_db),
 ) -> Optional[User]:
     """
-    Возвращает User если токен валиден, иначе None.
-    Не бросает HTTPException при отсутствии/ошибке токена.
+    Возвращает User, если токен валиден.
+    Если токена нет — возвращает None (гость).
+    Если токен есть, но невалиден/протух — бросает 401.
     """
     if not token:
+        # вообще нет Authorization: Bearer ... → гость
         return None
 
     payload = decode_access_token(token)
-    if payload is None:
-        return None
+    if payload is None or payload.get("type") != "access":
+        # токен есть, но он битый/протух → это ошибка авторизации
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Не удалось подтвердить учетные данные",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     user_id = payload.get("sub")
     if user_id is None:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Не удалось подтвердить учетные данные",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    return db.query(User).filter(User.user_id == user_id).first()
+    user = db.query(User).filter(User.user_id == int(user_id)).first()
+    if user is None or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Не удалось подтвердить учетные данные",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return user

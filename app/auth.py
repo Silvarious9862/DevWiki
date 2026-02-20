@@ -16,12 +16,13 @@ import bcrypt
 
 from app.db import get_db
 from app.models import User, Role
-from app.schemas import UserRegister, UserLogin, TokenResponse, UserResponse
+from app.schemas import UserRegister, UserLogin, TokenResponse, UserResponse, RefreshRequest
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 SECRET_KEY = "change_me_to_env"  # лучше брать из env/config
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 3
+REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -29,10 +30,6 @@ def require_auth(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """
-    Зависимость, возвращающая текущего аутентифицированного пользователя.
-    Бросает 401, если токен невалиден/протух или пользователь не найден.
-    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не удалось подтвердить учетные данные",
@@ -40,7 +37,7 @@ def require_auth(
     )
 
     payload = decode_access_token(token)
-    if payload is None:
+    if payload is None or payload.get("type") != "access":
         raise credentials_exception
 
     user_id = payload.get("sub")
@@ -52,6 +49,7 @@ def require_auth(
         raise credentials_exception
 
     return user
+ 
 
 # ============== Эндпоинты аутентификации ==============
 
@@ -112,29 +110,60 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, db: Session = Depends(get_db)):
-    """Авторизация пользователя (возврат JWT токена)."""
+    """Авторизация с выдачей access и refresh токенов."""
     user = authenticate_user(db, credentials.login, credentials.password)
     if not user:
-        # Не раскрываем, что именно не так: логин или пароль
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Неправильный логин или пароль",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": str(user.user_id), "login": user.login, "role_id": user.role_id},
-        expires_delta=access_token_expires,
+        data={"sub": str(user.user_id), "login": user.login, "role_id": user.role_id, "type": "access"},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    
+    refresh_token = create_refresh_token(
+        data={"sub": str(user.user_id)},
+        expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
-    # FastAPI сам прогонит user через UserResponse благодаря from_attributes
     return TokenResponse(
         access_token=access_token,
+        refresh_token=refresh_token,
         token_type="bearer",
         user=user,
     )
 
+
+@router.post("/refresh", response_model=dict)
+async def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
+    """Обновление access токена по refresh токену."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Недействительный refresh токен",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_refresh_token(request.refresh_token)
+    if payload is None:
+        raise credentials_exception
+
+    user_id = payload.get("sub")
+    if user_id is None:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.user_id == int(user_id)).first()
+    if user is None or not user.is_active:
+        raise credentials_exception
+
+    new_access_token = create_access_token(
+        data={"sub": str(user.user_id), "login": user.login, "role_id": user.role_id, "type": "access"},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 @router.post("/logout")
 async def logout(current_user: User = Depends(require_auth)):
@@ -170,7 +199,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode = data.copy()
 
     expire = datetime.now() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "type":"access"})
 
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -187,6 +216,24 @@ def decode_access_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
+
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Создание refresh JWT токена."""
+    to_encode = data.copy()
+    expire = datetime.now() + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    to_encode.update({"exp": expire, "type": "refresh"})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_refresh_token(token: str) -> Optional[dict]:
+    """Декодирование refresh токена с проверкой типа."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "refresh":
+            return None
+        return payload
+    except JWTError:
+        return None
+    
 
 def authenticate_user(db: Session, login: str, password: str) -> User | None:
     """Аутентификация пользователя по логину и паролю."""

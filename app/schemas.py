@@ -49,10 +49,13 @@ class UserResponse(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    """Схема ответа с токеном"""
     access_token: str
-    token_type: str = "bearer"
+    refresh_token: str
+    token_type: str
     user: UserResponse
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 # ============== Категории ==============

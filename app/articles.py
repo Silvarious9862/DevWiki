@@ -255,6 +255,42 @@ def update_article(
     return article
 
 
+@router.post(
+    "/{article_id}/toggle-publish",
+    response_model=schemas.ArticleResponse,
+)
+def toggle_article_publish(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_moderator),
+):
+    article = (
+        db.query(models.Article)
+        .filter(models.Article.article_id == article_id)
+        .first()
+    )
+    if article is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Статья не найдена",
+        )
+
+    # Переключаем статус
+    article.is_published = not bool(article.is_published)
+
+    # Если только что опубликовали — установим published_at
+    if article.is_published and article.published_at is None:
+        article.published_at = datetime.now()
+    # Если вернули в черновик — можно, при необходимости, сбросить published_at
+    # else:
+    #     article.published_at = None
+
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+
+    return article
+
 
 @router.delete(
     "/{article_id}",
