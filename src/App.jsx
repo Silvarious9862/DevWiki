@@ -50,7 +50,17 @@ function App() {
               path="/articles/new"
               element={
                 <MainLayout>
-                  <ArticleEditor />
+                  <ArticleEditor mode="create" />
+                </MainLayout>
+              }
+            />
+
+            { /* редактировать статью */ }
+            <Route
+              path="/articles/:id/edit"
+              element={
+                <MainLayout>
+                  <ArticleEditor mode="edit" />
                 </MainLayout>
               }
             />

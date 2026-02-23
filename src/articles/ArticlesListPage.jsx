@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ARTICLES_ENDPOINT } from "../config/api";
 import { useAuth } from "../auth/AuthContext";
 import "./ArticlesListPage.css";
@@ -9,6 +9,7 @@ import { ReactComponent as ToggleIcon } from "../assets/icons/hide.svg";
 import { ReactComponent as DeleteIcon } from "../assets/icons/trash.svg";
 
 function ArticlesListPage() {
+  const navigate = useNavigate();
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -268,6 +269,10 @@ function ArticlesListPage() {
                         type="button"
                         className="ArticlesTable__actionIconButton"
                         aria-label="Редактировать"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/articles/${article.article_id}/edit`);
+                        }}
                       >
                         <EditIcon />
                       </button>

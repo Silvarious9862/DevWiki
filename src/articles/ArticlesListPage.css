@@ -23,23 +23,6 @@
   overflow-y: hidden;
 }
 
-.ArticlesListPage__tableWrapper::-webkit-scrollbar {
-  height: 8px; /* горизонтальный скролл */
-}
-
-.ArticlesListPage__tableWrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ArticlesListPage__tableWrapper::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 999px;
-}
-
-.ArticlesListPage__tableWrapper::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-primary);
-}
-
 .ArticlesTable {
   width: 100%;
   border-collapse: collapse;
