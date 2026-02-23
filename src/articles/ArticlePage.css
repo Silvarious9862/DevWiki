@@ -1,0 +1,77 @@
+.ArticlePage {
+  padding: 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+.ArticlePage__title {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--text-primary);
+}
+
+.ArticlePage__content {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 20px 24px;
+}
+
+/* типографика в просмотре статьи */
+
+.ArticlePage__content h1,
+.ArticlePage__content h2,
+.ArticlePage__content h3 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.ArticlePage__content p {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.ArticlePage__content a {
+  color: var(--accent-primary);
+}
+
+/* код и таблицы в статье */
+
+.ArticlePage__content code,
+.ArticlePage__content pre {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.theme-light .ArticlePage__content pre,
+.theme-light .ArticlePage__content code {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+}
+
+.ArticlePage__content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.ArticlePage__content th,
+.ArticlePage__content td {
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+}
+
+/* цитаты */
+
+.ArticlePage__content blockquote {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent-primary);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}

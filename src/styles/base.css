@@ -15,6 +15,9 @@
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-muted: #666666;
+
+  --code-bg: #f3f4f6;
+  --code-text: #111827;
   
   --accent-primary: #ff7700; 
   --accent-secondary: #ffa726;
@@ -30,6 +33,24 @@
 *::before,
 *::after {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
 }
 
 .theme-light {
@@ -49,6 +70,9 @@
   --text-primary: #111827;
   --text-secondary: #4b5563;
   --text-muted: #9ca3af;
+
+  --code-bg: #111827;
+  --code-text: #f3f4f6;
 
   --accent-primary: #ff7700;
   --accent-secondary: #ffa726;

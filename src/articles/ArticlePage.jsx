@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import "./ArticlePage.css"
 
 export default function ArticlePage() {
   const { id } = useParams();
@@ -56,9 +58,13 @@ export default function ArticlePage() {
   if (!article) return <div>Статья не найдена</div>;
 
   return (
-    <div>
-      <h1>{article.title}</h1>
-      <article>{article.content}</article>
+    <div className="ArticlePage">
+      <h1 className="ArticlePage__title">{article.title}</h1>
+      <article className="ArticlePage__content">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {article.content || ""}
+        </ReactMarkdown>
+      </article>
     </div>
   );
 }

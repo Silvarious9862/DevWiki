@@ -5,24 +5,69 @@ import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
 import { useAuth } from "../auth/AuthContext";
 import "./ArticleEditor.css";
-
 import Button from "@mui/joy/Button";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+const DRAFT_STORAGE_KEY = "devwiki_article_draft_v1";
 
 export default function ArticleEditor() {
   const navigate = useNavigate();
   const { setItems } = useBreadcrumbs();
   const { user, isAuth } = useAuth();
   const { createArticle } = useApi();
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
 
-  const [form, setForm] = useState({
-    title: "",
-    content: "",
-    category_id: "",
+
+
+  const [form, setForm] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) {
+        return { title: "", content: "", category_id: "" };
+      }
+
+      const saved = JSON.parse(raw);
+      if (!saved || typeof saved !== "object") {
+        return { title: "", content: "", category_id: "" };
+      }
+
+      return {
+        title: saved.title ?? "",
+        content: saved.content ?? "",
+        category_id:
+          typeof saved.category_id === "number" ? saved.category_id : "",
+      };
+    } catch {
+      return { title: "", content: "", category_id: "" };
+    }
   });
+
+
+  useEffect(() => {
+    const payload = {
+      title: form.title,
+      content: form.content,
+      category_id:
+        typeof form.category_id === "number" ? form.category_id : null,
+    };
+
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore
+    }
+  }, [form.title, form.content, form.category_id]);
+
+
+
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
+
 
   const isFormValid =
   form.title.trim().length > 0 &&
@@ -62,6 +107,15 @@ export default function ArticleEditor() {
     }));
   };
 
+  const handleContentChange = (e) => {
+    const value = e.target.value;
+    setForm((prev) => ({
+      ...prev,
+      content: value,
+    }));
+  };
+
+
   const submitArticle = async (publish) => {
     setSaving(true);
     setError(null);
@@ -74,6 +128,13 @@ export default function ArticleEditor() {
         is_published: publish,
       };
       const created = await createArticle(payload);
+
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch {
+        // игнорируем ошибки очистки
+      }
+
       navigate(`/articles/${created.article_id}`);
     } catch (e) {
       setError(e.message || "Ошибка при сохранении");
@@ -87,15 +148,17 @@ export default function ArticleEditor() {
   const handleSaveDraft = () => submitArticle(false);
 
   return (
-    <div className="ArticleEditorPage">
-      <div className="ArticleEditorPage__header">
-        <h1>Новая статья</h1>
-        <div className="ArticleEditorPage__subtitle">
-          Напишите статью в Markdown, затем сохраните как черновик или сразу опубликуйте.
-        </div>
+  <div className="ArticleEditorPage">
+    <div className="ArticleEditorPage__header">
+      <h1>Новая статья</h1>
+      <div className="ArticleEditorPage__subtitle">
+        Напишите статью в Markdown, затем сохраните как черновик или сразу опубликуйте.
       </div>
+    </div>
 
-      <div className="ArticleEditorPage__card">
+    <div className="ArticleEditorPage__layout">
+      {/* Левая карточка: форма + редактор */}
+      <div className="ArticleEditorPage__card ArticleEditorPage__card--form">
         {error && (
           <div className="ArticleEditorPage__error">
             {error}
@@ -104,7 +167,7 @@ export default function ArticleEditor() {
 
         <form
           onSubmit={(e) => {
-            e.preventDefault(); // всё сохраняем через наши кнопки
+            e.preventDefault();
           }}
         >
           <div className="ArticleEditorForm__field">
@@ -132,16 +195,35 @@ export default function ArticleEditor() {
             />
           </div>
 
-          <div className="ArticleEditorForm__field">
-            <label className="ArticleEditorForm__label">
-              Контент (Markdown)
-            </label>
-            <textarea
-              className="ArticleEditorForm__textarea"
-              value={form.content}
-              onChange={handleChange("content")}
-              rows={20}
-            />
+          <div className="ArticleEditorForm__field ArticleEditorForm__field--editor">
+            <div className="ArticleEditorForm__editorTopRow">
+              <div className="ArticleEditorForm__editorLabels">
+                <div className="ArticleEditorForm__label">Редактор</div>
+              </div>
+
+              <Button
+                size="sm"
+                variant="plain"
+                onClick={() => setIsPreviewOpen((v) => !v)}
+                className={
+                  isPreviewOpen
+                    ? "ArticleEditorForm__previewToggle ArticleEditorForm__previewToggle--active"
+                    : "ArticleEditorForm__previewToggle"
+                }
+              >
+                {isPreviewOpen ? "Скрыть превью" : "Показать превью"}
+              </Button>
+            </div>
+
+            <div className="ArticleEditorForm__editorPane">
+              <textarea
+                className="ArticleEditorForm__textarea"
+                value={form.content}
+                onChange={handleContentChange}
+                rows={18}
+                placeholder="Введите Markdown-текст статьи…"
+              />
+            </div>
           </div>
 
           <div className="ArticleEditorForm__footerRow">
@@ -190,7 +272,6 @@ export default function ArticleEditor() {
                     }
                   }}
                 >
-                  {/* левая часть – «Опубликовать» */}
                   <span
                     className="ArticleEditorSplitButton__main"
                     onClick={(e) => {
@@ -202,7 +283,6 @@ export default function ArticleEditor() {
                     {saving ? "Сохранение…" : "Опубликовать"}
                   </span>
 
-                  {/* правая часть – стрелка */}
                   <span
                     className={
                       "ArticleEditorSplitButton__toggle" +
@@ -261,6 +341,23 @@ export default function ArticleEditor() {
           </div>
         </form>
       </div>
+
+      {/* Правая карточка: предпросмотр */}
+      {isPreviewOpen && (
+        <div className="ArticleEditorPage__card ArticleEditorPage__card--preview">
+          <div className="ArticleEditorPreview__header">
+            <div className="ArticleEditorPreview__title">Предпросмотр</div>
+          </div>
+
+          <div className="ArticleEditorPreview__scroll">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {`# ${form.title || "Без названия"}\n\n${form.content || ""}`}
+            </ReactMarkdown>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
+
 }
