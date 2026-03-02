@@ -29,7 +29,7 @@ function formatDateTime(iso) {
 export default function ArticlePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getArticle, toggleArticleReaction } = useApi();
+  const { getArticle, toggleArticleReaction, getTagsByIds } = useApi();
   const { setItems } = useBreadcrumbs();
   const { user, isAuth } = useAuth();
   const isModerator =
@@ -41,6 +41,7 @@ export default function ArticlePage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
+  const [tags, setTags] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,6 +65,22 @@ export default function ArticlePage() {
           crumbs.push({ label: data.title });
 
           setItems(crumbs);
+
+          // --- теги ---
+          if (data.tag_ids && data.tag_ids.length > 0) {
+            try {
+              const tagList = await getTagsByIds(data.tag_ids);
+              if (!cancelled) {
+                setTags(tagList);
+              }
+            } catch (e) {
+              // тихо игнорируем ошибку тегов, чтобы не ломать страницу статьи
+              console.error("Failed to load tags", e);
+            }
+          } else {
+            setTags([]);
+          }
+
         }
       } catch (e) {
         if (!cancelled) setError(e.message || "Ошибка загрузки");
@@ -78,7 +95,7 @@ export default function ArticlePage() {
       cancelled = true;
       setItems([]);
     };
-  }, [id, getArticle, setItems]);
+  }, [id, getArticle, getTagsByIds, setItems]);
 
   if (loading) return <div>Загрузка…</div>;
   if (error) return <div>{error}</div>;
@@ -181,6 +198,20 @@ export default function ArticlePage() {
           </span>
         )}
       </div>
+
+      {tags.length > 0 && (
+        <div className="ArticlePage__tagsRow">
+          {tags.map((tag) => (
+            <span
+              key={tag.tag_id}
+              className="ArticlePage__tagChip ArticlePage__tagChip--clickable"
+              onClick={() => navigate(`/articles?tag_ids=${tag.tag_id}`)}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
 
       <article className="ArticlePage__content">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>

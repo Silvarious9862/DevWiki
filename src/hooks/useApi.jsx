@@ -1,7 +1,7 @@
 // src/hooks/useApi.js
 import { useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { ARTICLES_ENDPOINT, RATINGS_ENDPOINT } from "../config/api";
+import { ARTICLES_ENDPOINT, RATINGS_ENDPOINT, TAGS_ENDPOINT } from "../config/api";
 
 export function useApi() {
   const { token, refresh, logout } = useAuth();
@@ -99,6 +99,7 @@ export function useApi() {
     [authFetch]
   );
 
+  // ---------- лайки ----------
   async function toggleArticleReaction(articleId, type) {
     const res = await authFetch(`${RATINGS_ENDPOINT}/articles/${articleId}`, {
       method: "POST",
@@ -111,11 +112,29 @@ export function useApi() {
     return res.json(); // { likes_count, dislikes_count, user_reaction }
   }
 
+  // ---------- теги ----------
+
+  const getTagsByIds = useCallback(
+    async (ids) => {
+      if (!ids || ids.length === 0) return [];
+      const params = new URLSearchParams();
+      ids.forEach((id) => params.append("ids", id));
+      const resp = await authFetch(`${TAGS_ENDPOINT}/bulk?${params.toString()}`, {
+        method: "GET",
+      });
+      if (!resp.ok) {
+        throw new Error("Не удалось загрузить теги");
+      }
+      return resp.json(); // массив TagResponse
+    },
+    [authFetch]
+  );
 
   return {
     getArticle,
     createArticle,
     updateArticle,
     toggleArticleReaction,
+    getTagsByIds,
   };
 }
