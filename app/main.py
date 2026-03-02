@@ -13,6 +13,7 @@ from app.db import get_db
 from app.health import check_app, check_db, check_front
 from app.health import router as health_router
 from app.models import User, Article, Comment, Category, Tag, Attachment, Rating
+from app.ratings import router as ratings_router
 from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
     ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
@@ -29,6 +30,7 @@ app = FastAPI(title="Dev Wiki API", version="0.1.1")
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(articles_router)
+app.include_router(ratings_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)

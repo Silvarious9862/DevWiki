@@ -114,6 +114,9 @@ class ArticleResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     article_id: int
+    author_login: str | None = None
+    author_first_name: str | None = None
+    author_last_name: str | None = None
     title: str
     content: str
     author_id: int
@@ -126,6 +129,7 @@ class ArticleResponse(BaseModel):
     likes_count: int
     dislikes_count: int
     view_count: int
+    user_reaction: str | None = None
 
 
 class ArticleListItem(BaseModel):
@@ -146,6 +150,7 @@ class ArticleListItem(BaseModel):
     likes_count: int
     dislikes_count: int
     view_count: int
+    user_reaction: str | None = None
 
 
 class ArticleSearchParams(BaseModel):
@@ -199,8 +204,14 @@ class AttachmentResponse(BaseModel):
 
 # ============== Рейтинги ==============
 class RatingCreate(BaseModel):
-    """Схема создания лайка/дизлайка"""
     type: str  # 'like' или 'dislike'
+
+class RatingToggleResponse(BaseModel):
+    """Ответ при установке/смене реакции"""
+    likes_count: int
+    dislikes_count: int
+    user_reaction: str | None = None  # 'like' | 'dislike' | None
+
 
 
 class RatingResponse(BaseModel):

@@ -121,18 +121,27 @@ def get_article(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    article = (
-        db.query(models.Article)
-        .options(joinedload(models.Article.category))
+    row = (
+        db.query(
+            models.Article,
+            User.login.label("author_login"),
+            User.first_name.label("author_first_name"),
+            User.last_name.label("author_last_name"),
+            Category.description.label("category_name"),
+        )
+        .join(User, User.user_id == models.Article.author_id)
+        .outerjoin(Category, Category.category_id == models.Article.category_id)
         .filter(models.Article.article_id == article_id)
         .first()
     )
 
-    if article is None:
+    if row is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Статья не найдена",
         )
+
+    article, author_login, author_first_name, author_last_name, category_name = row
 
     is_moderator = (
         current_user is not None
@@ -145,6 +154,20 @@ def get_article(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Статья не найдена",
         )
+    
+    user_reaction: str | None = None
+    if current_user is not None:
+        rating = (
+            db.query(models.Rating)
+            .filter(
+                models.Rating.reactionable_type == "article",
+                models.Rating.reactionable_id == article.article_id,
+                models.Rating.user_id == current_user.user_id,
+            )
+            .first()
+        )
+        if rating:
+            user_reaction = rating.type
 
     article.view_count = (article.view_count or 0) + 1
     db.add(article)
@@ -152,14 +175,24 @@ def get_article(
     db.refresh(article)
 
     return schemas.ArticleResponse(
-        **article.__dict__,
-        category_name=(
-            article.category.description
-            if getattr(article, "category", None)
-            else None
-        ),
+        article_id=article.article_id,
+        title=article.title,
+        content=article.content,
+        author_id=article.author_id,
+        author_login=author_login,
+        author_first_name=author_first_name,
+        author_last_name=author_last_name,
+        category_id=article.category_id,
+        category_name=category_name,
+        is_published=article.is_published,
+        published_at=article.published_at,
+        created_at=article.created_at,
+        updated_at=article.updated_at,
+        likes_count=article.likes_count,
+        dislikes_count=article.dislikes_count,
+        view_count=article.view_count,
+        user_reaction=user_reaction,
     )
-
 
 
 @router.post(
