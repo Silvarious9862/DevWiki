@@ -1,8 +1,28 @@
 from sqlalchemy import text
-from db import engine
+from fastapi import APIRouter
+
+from app.db import engine
+
 import httpx
 
 FRONTEND_HOST = "http://192.168.100.30:3000"
+
+router = APIRouter(tags=["health"])
+
+@router.get("/health")
+async def health():
+    """Проверка состояния системы"""
+    app_status = await check_app()
+    db_status = check_db()
+    front_status = await check_front()
+    #front_status = {"status": "skipped"}
+
+    return {
+        "system": "wiki",
+        "app": app_status,
+        "db": db_status,
+        "front": front_status,
+    }
 
 async def check_app():
     return {"status": "ok", "app": "alive"}
