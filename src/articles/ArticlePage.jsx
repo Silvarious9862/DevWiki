@@ -4,7 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
 import { useAuth } from "../auth/AuthContext";
+
 import Button from "@mui/joy/Button";
+import IconButton from "@mui/joy/IconButton";
+import ThumbUpAltOutlinedIcon from "@mui/icons-material/ThumbUpAltOutlined";
+import ThumbDownAltOutlinedIcon from "@mui/icons-material/ThumbDownAltOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./ArticlePage.css";
@@ -92,7 +98,13 @@ export default function ArticlePage() {
   }
 
   // автор — сейчас в модели нет имени, можно временно пропустить
-  // metaParts.push("Автор: ...");
+  if (article.author_first_name && article.author_last_name) {
+    metaParts.push(`Автор: ${article.author_first_name} ${article.author_last_name}`);
+  } else if (article.author_login) {
+    metaParts.push(`Автор: ${article.author_login}`)
+  } else {
+    metaParts.push(`Автор неизвестен`)
+  }
 
   // теги — когда появятся, добавим сюда
   // if (article.tags?.length) {
@@ -152,6 +164,90 @@ export default function ArticlePage() {
           {article.content || ""}
         </ReactMarkdown>
       </article>
+
+            <div
+        className="ArticlePage__footerRow"
+        style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+      >
+        <div
+          className="ArticlePage__statsChip"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            padding: "2px 4px",
+            borderRadius: 999,
+            backgroundColor: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            boxShadow: "var(--shadow)",
+          }}
+        >
+          <IconButton
+            size="sm"
+            variant="plain"
+            color="neutral"
+            sx={{
+              borderRadius: 999,
+              px: 1,
+              py: 0.25,
+              color: "var(--text-secondary)",
+              "&:hover": {
+                backgroundColor: "var(--accent-primary)",
+                color: "var(--text-primary)",
+              },
+            }}
+          >
+            <ThumbUpAltOutlinedIcon fontSize="small" />
+            <span className="ArticlePage__reactionCount">
+              {article.likes_count}
+            </span>
+          </IconButton>
+
+          <IconButton
+            size="sm"
+            variant="plain"
+            color="neutral"
+            sx={{
+              borderRadius: 999,
+              px: 1,
+              py: 0.25,
+              color: "var(--text-secondary)",
+              "&:hover": {
+                backgroundColor: "var(--accent-primary)",
+                color: "var(--text-primary)",
+              },
+            }}
+          >
+            <ThumbDownAltOutlinedIcon fontSize="small" />
+            <span className="ArticlePage__reactionCount">
+              {article.dislikes_count}
+            </span>
+          </IconButton>
+
+          <div className="ArticlePage__statsDivider" />
+
+          <IconButton
+            size="sm"
+            variant="plain"
+            color="neutral"
+            sx={{
+              borderRadius: 999,
+              px: 1,
+              py: 0.25,
+              color: "var(--text-secondary)",
+              pointerEvents: "none",
+              "&:hover": {
+                backgroundColor: "transparent",
+              },
+            }}
+          >
+            <VisibilityOutlinedIcon fontSize="small" />
+            <span className="ArticlePage__reactionCount">
+              {article.view_count}
+            </span>
+          </IconButton>
+        </div>
+      </div>
     </div>
   );
 }
