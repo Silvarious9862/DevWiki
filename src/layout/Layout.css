@@ -12,11 +12,7 @@
 /* Header */
 .header {
   height: 70px;
-  background: linear-gradient(
-    135deg,
-    rgba(12, 19, 25, 0.95) 0%,
-    rgba(8, 11, 18, 0.98) 100%
-  );
+  background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(51, 51, 51, 0.3);
@@ -133,7 +129,7 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: #1b2333;
+  background: var(--theme-thumb-bg);
   transition: transform 0.2s ease;
 }
 
@@ -222,4 +218,37 @@
   margin: 0 0 24px 0;
   font-size: 32px;
   color: var(--text-primary);
+}
+
+/* Хлебные крошки */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.breadcrumb-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumb-sep {
+  margin: 0 4px;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.theme-light .breadcrumbs {
+  color: var(--text-secondary);
 }

@@ -1,0 +1,175 @@
+.ArticlesListPage {
+  padding: 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ArticlesListPage__header {
+  margin-bottom: 16px;
+}
+
+.ArticlesListPage__header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ArticlesListPage__tableWrapper {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ArticlesTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ArticlesTable thead {
+  background: var(--bg-secondary);
+}
+
+.ArticlesTable th,
+.ArticlesTable td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.ArticlesTable th {
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.ArticlesTable td {
+  color: var(--text-primary);
+}
+
+.ArticlesTable tbody tr:hover {
+  background: var(--bg-secondary);
+  cursor: pointer;
+}
+
+.ArticlesTable__titleLink {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.ArticlesTable__row {
+  cursor: pointer;
+}
+
+.ArticlesTable__row:hover {
+  background: var(--bg-secondary);
+}
+
+.ArticlesTable__statusCell {
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Общая плашка */
+.ArticlesTable td.ArticlesTable__statusCell--published span,
+.ArticlesTable td.ArticlesTable__statusCell--draft span {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px; /* максимально скруглённые */
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Опубликовано — зелёная плашка */
+.ArticlesTable td.ArticlesTable__statusCell--published span {
+  background: rgba(46, 125, 50, 0.15); /* мягкий фон */
+  color: #2e7d32;
+  border: 1px solid rgba(46, 125, 50, 0.6);
+}
+
+/* Черновик — плашка в цвет accent-primary */
+.ArticlesTable td.ArticlesTable__statusCell--draft span {
+  background: rgba(255, 119, 0, 0.15); 
+  color: var(--accent-primary);
+  border: 1px solid rgba(255, 119, 0, 0.6);
+}
+/* ----------------------------------------*/
+.ArticlesTable__actionIconButton {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+  color: var(--text-primary); /* иконка в цвет текста */
+}
+
+.ArticlesTable__actionIconButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* hover-подсветка */
+.ArticlesTable__actionIconButton:hover {
+  background: var(--accent-primary);
+  transform: translateY(-0.5px);
+}
+
+.ArticlesTable__actionIconButton--delete {
+  color: #fd4444;
+}
+
+.ArticlesTable__actionIconButton--delete:hover {
+  background: #b91c1c;   
+  color: #fee2e2;       
+  transform: translateY(-0.5px);
+}
+
+.theme-light .ArticlesTable__actionIconButton--delete {
+  color: #b91c1c;
+}
+
+.theme-light .ArticlesTable__actionIconButton--delete:hover {
+  background: #fd4444;   /* светлый фон для light */
+  color: var(--text-primary);        /* более тёмная иконка */
+}
+
+.ArticlesListPage__headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ArticlesListPage__newButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-primary);
+  background: var(--accent-primary);
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    transform 0.1s ease, color 0.15s ease;
+}
+
+.ArticlesListPage__newButton:hover {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  transform: translateY(-0.5px);
+}
+
+.theme-light .ArticlesListPage__newButton {
+  color: #111827;
+}

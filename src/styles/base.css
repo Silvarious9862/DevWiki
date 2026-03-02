@@ -1,23 +1,85 @@
-/* Глобальные переменные цветов (темная тема по мокапу) */
+/* Глобальные переменные цветов */
 :root {
   --bg-primary: #080b12;
   --bg-secondary: #0c1319;
   --bg-card: #0f131c;
   --bg-header: #ffffff;
   
+  --header-bg: linear-gradient(
+    135deg,
+    rgba(12, 19, 25, 0.95) 0%,
+    rgba(8, 11, 18, 0.98) 100%
+  );
+  --header-border: rgba(51, 51, 51, 0.3);
+
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-muted: #666666;
+
+  --code-bg: #f3f4f6;
+  --code-text: #111827;
   
-  --accent-primary: #ff7700; /* оранжевый акцент */
+  --accent-primary: #ff7700; 
   --accent-secondary: #ffa726;
+  --accent-muted: #888888;
   
   --border-color: #333333;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  
+  --theme-thumb-bg: #1b2333;
 }
 
 *,
 *::before,
 *::after {
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+.theme-light {
+  --bg-primary: #f9fafb;    
+  --bg-secondary: #f3f4f6;  
+  --bg-card: #ffffff;       
+  --bg-header: #f9fafb;    
+
+  --header-bg: linear-gradient(
+    135deg,
+    #f3f4f6fa 0%,  
+    #e5e7ebfa 100% 
+  );
+
+  --header-border: rgba(209, 213, 219, 0.9);
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+
+  --code-bg: #111827;
+  --code-text: #f3f4f6;
+
+  --accent-primary: #ff7700;
+  --accent-secondary: #ffa726;
+  --accent-muted: #d1d5db;
+
+  --border-color: #e5e7eb;
+  --shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+
+  --theme-thumb-bg: #d1d5db; 
 }
