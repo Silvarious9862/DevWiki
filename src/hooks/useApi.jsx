@@ -1,7 +1,7 @@
 // src/hooks/useApi.js
 import { useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { ARTICLES_ENDPOINT } from "../config/api";
+import { ARTICLES_ENDPOINT, RATINGS_ENDPOINT } from "../config/api";
 
 export function useApi() {
   const { token, refresh, logout } = useAuth();
@@ -99,9 +99,23 @@ export function useApi() {
     [authFetch]
   );
 
+  async function toggleArticleReaction(articleId, type) {
+    const res = await authFetch(`${RATINGS_ENDPOINT}/articles/${articleId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }), // "like" | "dislike"
+    });
+    if (!res.ok) {
+      throw new Error("Не удалось обновить реакцию");
+    }
+    return res.json(); // { likes_count, dislikes_count, user_reaction }
+  }
+
+
   return {
     getArticle,
     createArticle,
     updateArticle,
+    toggleArticleReaction,
   };
 }

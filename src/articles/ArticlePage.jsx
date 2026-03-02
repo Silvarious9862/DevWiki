@@ -29,7 +29,7 @@ function formatDateTime(iso) {
 export default function ArticlePage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getArticle } = useApi();
+  const { getArticle, toggleArticleReaction } = useApi();
   const { setItems } = useBreadcrumbs();
   const { user, isAuth } = useAuth();
   const isModerator =
@@ -40,6 +40,7 @@ export default function ArticlePage() {
   const [article, setArticle] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userReaction, setUserReaction] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +52,7 @@ export default function ArticlePage() {
         const data = await getArticle(id);
         if (!cancelled) {
           setArticle(data);
+          setUserReaction(data.user_reaction || null);
 
           const crumbs = [];
           if (data.category_id && data.category_name) {
@@ -105,6 +107,27 @@ export default function ArticlePage() {
   } else {
     metaParts.push(`Автор неизвестен`)
   }
+
+  const handleReaction = async (type) => {
+    if (!isAuth || !user) return;
+
+    try {
+      const res = await toggleArticleReaction(article.article_id, type);
+      setArticle((prev) =>
+        prev
+          ? {
+              ...prev,
+              likes_count: res.likes_count,
+              dislikes_count: res.dislikes_count,
+            }
+          : prev
+      );
+      setUserReaction(res.user_reaction);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
 
   // теги — когда появятся, добавим сюда
   // if (article.tags?.length) {
@@ -186,11 +209,16 @@ export default function ArticlePage() {
             size="sm"
             variant="plain"
             color="neutral"
+            onClick={() => handleReaction("like")}
+            disabled={!isAuth}
             sx={{
               borderRadius: 999,
               px: 1,
               py: 0.25,
-              color: "var(--text-secondary)",
+              color:
+                userReaction === "like"
+                  ? "var(--accent-primary)"
+                  : "var(--text-secondary)",
               "&:hover": {
                 backgroundColor: "var(--accent-primary)",
                 color: "var(--text-primary)",
@@ -207,11 +235,16 @@ export default function ArticlePage() {
             size="sm"
             variant="plain"
             color="neutral"
+            onClick={() => handleReaction("dislike")}
+            disabled={!isAuth}
             sx={{
               borderRadius: 999,
               px: 1,
               py: 0.25,
-              color: "var(--text-secondary)",
+              color:
+                userReaction === "dislike"
+                  ? "var(--accent-primary)"
+                  : "var(--text-secondary)",
               "&:hover": {
                 backgroundColor: "var(--accent-primary)",
                 color: "var(--text-primary)",
