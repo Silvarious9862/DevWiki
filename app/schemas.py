@@ -77,18 +77,25 @@ class CategoryResponse(BaseModel):
 
 # ============== Теги ==============
 class TagCreate(BaseModel):
-    """Схема создания тега"""
     name: str
 
+class TagUpdate(BaseModel):
+    name: str
 
 class TagResponse(BaseModel):
-    """Схема ответа с данными тега"""
     model_config = ConfigDict(from_attributes=True)
-
+    
     tag_id: int
     name: str
     created_at: datetime
 
+class TagWithCountResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    tag_id: int
+    name: str
+    created_at: datetime
+    articles_count: int
 
 # ============== Статьи ==============
 class ArticleCreate(BaseModel):
@@ -130,6 +137,7 @@ class ArticleResponse(BaseModel):
     dislikes_count: int
     view_count: int
     user_reaction: str | None = None
+    tag_ids: List[int] = []
 
 
 class ArticleListItem(BaseModel):
@@ -151,6 +159,7 @@ class ArticleListItem(BaseModel):
     dislikes_count: int
     view_count: int
     user_reaction: str | None = None
+    tag_ids: List[int] = []
 
 
 class ArticleSearchParams(BaseModel):

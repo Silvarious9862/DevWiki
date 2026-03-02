@@ -83,9 +83,14 @@ class Article(Base):
     comments = relationship("Comment", back_populates="article", cascade="all, delete-orphan")
     article_tags = relationship("ArticleTag", back_populates="article", cascade="all, delete-orphan")
     attachments = relationship("Attachment", back_populates="article", cascade="all, delete-orphan")
-    ratings = relationship("Rating", back_populates="article", cascade="all, delete-orphan",
-                          foreign_keys="[Rating.reactionable_id]",
-                          primaryjoin="and_(Article.article_id==Rating.reactionable_id, Rating.reactionable_type=='article')")
+    ratings = relationship(
+        "Rating",
+        back_populates="article",
+        cascade="all, delete-orphan",
+        foreign_keys="[Rating.reactionable_id]",
+        primaryjoin="and_(Article.article_id==Rating.reactionable_id, Rating.reactionable_type=='article')",
+        overlaps="article,comment,ratings",
+    )
 
 
 class ArticleTag(Base):
@@ -115,9 +120,14 @@ class Comment(Base):
 
     article = relationship("Article", back_populates="comments")
     author = relationship("User", back_populates="comments")
-    ratings = relationship("Rating", back_populates="comment", cascade="all, delete-orphan",
-                          foreign_keys="[Rating.reactionable_id]",
-                          primaryjoin="and_(Comment.comment_id==Rating.reactionable_id, Rating.reactionable_type=='comment')")
+    ratings = relationship(
+        "Rating",
+        back_populates="comment",
+        cascade="all, delete-orphan",
+        foreign_keys="[Rating.reactionable_id]",
+        primaryjoin="and_(Comment.comment_id==Rating.reactionable_id, Rating.reactionable_type=='comment')",
+        overlaps="article,comment,ratings",
+    )
 
 
 class Attachment(Base):

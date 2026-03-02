@@ -14,6 +14,7 @@ from app.health import check_app, check_db, check_front
 from app.health import router as health_router
 from app.models import User, Article, Comment, Category, Tag, Attachment, Rating
 from app.ratings import router as ratings_router
+from app.tags import router as tags_router
 from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
     ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
@@ -31,6 +32,7 @@ app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(articles_router)
 app.include_router(ratings_router)
+app.include_router(tags_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)
@@ -107,38 +109,6 @@ async def delete_comment(
     current_user: User = Depends(require_auth)
 ):
     """Удаление комментария (автор или модератор)"""
-    pass
-
-
-# ============== Рейтинги (Likes/Dislikes) ==============
-
-@app.post("/articles/{article_id}/like", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
-async def like_article(
-    article_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Поставить лайк статье"""
-    pass
-
-
-@app.post("/articles/{article_id}/dislike", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
-async def dislike_article(
-    article_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Поставить дизлайк статье"""
-    pass
-
-
-@app.delete("/articles/{article_id}/reaction", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_article_reaction(
-    article_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Удалить свою реакцию со статьи"""
     pass
 
 

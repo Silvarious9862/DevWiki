@@ -83,12 +83,18 @@ def list_articles(
 
     offset = (page - 1) * limit
     q = q.order_by(models.Article.created_at.desc())
-    articles = q.offset(offset).limit(limit).all()
 
     rows = q.offset(offset).limit(limit).all()
 
     items: list[schemas.ArticleListItem] = []
     for article, author_login, author_first_name, author_last_name, category_name in rows:
+        tag_ids = [
+            at.tag_id
+            for at in db.query(ArticleTag).filter(
+                ArticleTag.article_id == article.article_id
+            ).all()
+        ]
+
         items.append(
             schemas.ArticleListItem(
                 article_id=article.article_id,
@@ -105,6 +111,7 @@ def list_articles(
                 likes_count=article.likes_count,
                 dislikes_count=article.dislikes_count,
                 view_count=article.view_count,
+                tag_ids=tag_ids,
             )
         )
 
@@ -142,6 +149,14 @@ def get_article(
         )
 
     article, author_login, author_first_name, author_last_name, category_name = row
+
+    tag_ids = [
+        at.tag_id
+        for at in db.query(ArticleTag).filter(
+            ArticleTag.article_id == article.article_id
+        ).all()
+    ]
+
 
     is_moderator = (
         current_user is not None
@@ -192,6 +207,7 @@ def get_article(
         dislikes_count=article.dislikes_count,
         view_count=article.view_count,
         user_reaction=user_reaction,
+        tag_ids=tag_ids,
     )
 
 
