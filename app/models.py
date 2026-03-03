@@ -113,6 +113,8 @@ class Comment(Base):
     text = Column(Text, nullable=False)
     article_id = Column(Integer, ForeignKey("articles.article_id", ondelete="CASCADE"), nullable=False)
     author_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    parent_id = Column(Integer, ForeignKey("comments.comment_id"), nullable=True)   
+    depth = Column(Integer, default=0, nullable=False)                            
     likes_count = Column(Integer, default=0)
     dislikes_count = Column(Integer, default=0)
     created_at = Column(TIMESTAMP, default=datetime.now)
@@ -120,6 +122,7 @@ class Comment(Base):
 
     article = relationship("Article", back_populates="comments")
     author = relationship("User", back_populates="comments")
+    children = relationship("Comment")  
     ratings = relationship(
         "Rating",
         back_populates="comment",

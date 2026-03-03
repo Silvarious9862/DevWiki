@@ -15,6 +15,7 @@ from app.health import router as health_router
 from app.models import User, Article, Comment, Category, Tag, Attachment, Rating
 from app.ratings import router as ratings_router
 from app.tags import router as tags_router
+from app.comments import router as comments_router
 from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
     ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
@@ -33,6 +34,7 @@ app.include_router(auth_router)
 app.include_router(articles_router)
 app.include_router(ratings_router)
 app.include_router(tags_router)
+app.include_router(comments_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)
@@ -69,111 +71,6 @@ async def custom_404_handler(request: Request, exc: HTTPException):
         }
     )
 
-# ============== Комментарии (Comments) ==============
-
-@app.get("/articles/{article_id}/comments", response_model=List[CommentResponse])
-async def list_comments(
-    article_id: int,
-    db: Session = Depends(get_db)
-):
-    """Получение списка комментариев к статье"""
-    pass
-
-
-@app.post("/articles/{article_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
-async def create_comment(
-    article_id: int,
-    comment_data: CommentCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Создание комментария к статье (требует авторизации)"""
-    pass
-
-
-@app.put("/comments/{comment_id}", response_model=CommentResponse)
-async def update_comment(
-    comment_id: int,
-    comment_data: CommentUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Редактирование комментария (только автор)"""
-    pass
-
-
-@app.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_comment(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Удаление комментария (автор или модератор)"""
-    pass
-
-
-@app.post("/comments/{comment_id}/like", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
-async def like_comment(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Поставить лайк комментарию"""
-    pass
-
-
-@app.post("/comments/{comment_id}/dislike", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
-async def dislike_comment(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Поставить дизлайк комментарию"""
-    pass
-
-
-@app.delete("/comments/{comment_id}/reaction", status_code=status.HTTP_204_NO_CONTENT)
-async def remove_comment_reaction(
-    comment_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Удалить свою реакцию с комментария"""
-    pass
-
-
-# ============== Категории и Теги ==============
-
-@app.get("/categories", response_model=List[CategoryResponse])
-async def list_categories(db: Session = Depends(get_db)):
-    """Получение списка всех категорий"""
-    pass
-
-
-@app.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
-async def create_category(
-    category_data: CategoryCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_moderator)
-):
-    """Создание новой категории (только модератор)"""
-    pass
-
-
-@app.get("/tags", response_model=List[TagResponse])
-async def list_tags(db: Session = Depends(get_db)):
-    """Получение списка всех тегов"""
-    pass
-
-
-@app.post("/tags", response_model=TagResponse, status_code=status.HTTP_201_CREATED)
-async def create_tag(
-    tag_data: TagCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_auth)
-):
-    """Создание нового тега (требует авторизации)"""
-    pass
 
 
 # ============== Вложения (Attachments) ==============

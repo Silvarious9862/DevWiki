@@ -172,6 +172,23 @@ class ArticleSearchParams(BaseModel):
 
 
 # ============== Комментарии ==============
+class CommentTreeItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    comment_id: int
+    text: str
+    article_id: int
+    author_id: int
+    parent_id: int | None = None
+    depth: int
+    likes_count: int
+    dislikes_count: int
+    created_at: datetime
+    updated_at: datetime
+    children: List["CommentTreeItem"] = []
+
+CommentTreeItem.model_rebuild()
+
 class CommentCreate(BaseModel):
     """Схема создания комментария"""
     text: str
