@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
 import { useAuth } from "../auth/AuthContext";
+import ArticleComments from "./ArticleComments";
 
 import Button from "@mui/joy/Button";
 import IconButton from "@mui/joy/IconButton";
@@ -145,12 +146,6 @@ export default function ArticlePage() {
     }
   };
 
-
-  // теги — когда появятся, добавим сюда
-  // if (article.tags?.length) {
-  //   metaParts.push(`теги: ${article.tags.join(", ")}`);
-  // }
-
   const metaLine = metaParts.join(" · ");
 
   return (
@@ -217,101 +212,103 @@ export default function ArticlePage() {
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {article.content || ""}
         </ReactMarkdown>
+        <div
+          className="ArticlePage__footerRow"
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+        >
+          <div
+            className="ArticlePage__statsChip"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "2px 4px",
+              borderRadius: 999,
+              backgroundColor: "var(--bg-card)",
+              border: "1px solid var(--border-color)",
+              boxShadow: "var(--shadow)",
+            }}
+          >
+            <IconButton
+              size="sm"
+              variant="plain"
+              color="neutral"
+              onClick={() => handleReaction("like")}
+              disabled={!isAuth}
+              sx={{
+                borderRadius: 999,
+                px: 1,
+                py: 0.25,
+                color:
+                  userReaction === "like"
+                    ? "var(--accent-primary)"
+                    : "var(--text-secondary)",
+                "&:hover": {
+                  backgroundColor: "var(--accent-primary)",
+                  color: "var(--text-primary)",
+                },
+              }}
+            >
+              <ThumbUpAltOutlinedIcon fontSize="small" />
+              <span className="ArticlePage__reactionCount">
+                {article.likes_count}
+              </span>
+            </IconButton>
+
+            <IconButton
+              size="sm"
+              variant="plain"
+              color="neutral"
+              onClick={() => handleReaction("dislike")}
+              disabled={!isAuth}
+              sx={{
+                borderRadius: 999,
+                px: 1,
+                py: 0.25,
+                color:
+                  userReaction === "dislike"
+                    ? "var(--accent-primary)"
+                    : "var(--text-secondary)",
+                "&:hover": {
+                  backgroundColor: "var(--accent-primary)",
+                  color: "var(--text-primary)",
+                },
+              }}
+            >
+              <ThumbDownAltOutlinedIcon fontSize="small" />
+              <span className="ArticlePage__reactionCount">
+                {article.dislikes_count}
+              </span>
+            </IconButton>
+
+            <div className="ArticlePage__statsDivider" />
+
+            <IconButton
+              size="sm"
+              variant="plain"
+              color="neutral"
+              sx={{
+                borderRadius: 999,
+                px: 1,
+                py: 0.25,
+                color: "var(--text-secondary)",
+                pointerEvents: "none",
+                "&:hover": {
+                  backgroundColor: "transparent",
+                },
+              }}
+            >
+              <VisibilityOutlinedIcon fontSize="small" />
+              <span className="ArticlePage__reactionCount">
+                {article.view_count}
+              </span>
+            </IconButton>
+          </div>
+        </div>
       </article>
 
-            <div
-        className="ArticlePage__footerRow"
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
-      >
-        <div
-          className="ArticlePage__statsChip"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            padding: "2px 4px",
-            borderRadius: 999,
-            backgroundColor: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            boxShadow: "var(--shadow)",
-          }}
-        >
-          <IconButton
-            size="sm"
-            variant="plain"
-            color="neutral"
-            onClick={() => handleReaction("like")}
-            disabled={!isAuth}
-            sx={{
-              borderRadius: 999,
-              px: 1,
-              py: 0.25,
-              color:
-                userReaction === "like"
-                  ? "var(--accent-primary)"
-                  : "var(--text-secondary)",
-              "&:hover": {
-                backgroundColor: "var(--accent-primary)",
-                color: "var(--text-primary)",
-              },
-            }}
-          >
-            <ThumbUpAltOutlinedIcon fontSize="small" />
-            <span className="ArticlePage__reactionCount">
-              {article.likes_count}
-            </span>
-          </IconButton>
 
-          <IconButton
-            size="sm"
-            variant="plain"
-            color="neutral"
-            onClick={() => handleReaction("dislike")}
-            disabled={!isAuth}
-            sx={{
-              borderRadius: 999,
-              px: 1,
-              py: 0.25,
-              color:
-                userReaction === "dislike"
-                  ? "var(--accent-primary)"
-                  : "var(--text-secondary)",
-              "&:hover": {
-                backgroundColor: "var(--accent-primary)",
-                color: "var(--text-primary)",
-              },
-            }}
-          >
-            <ThumbDownAltOutlinedIcon fontSize="small" />
-            <span className="ArticlePage__reactionCount">
-              {article.dislikes_count}
-            </span>
-          </IconButton>
-
-          <div className="ArticlePage__statsDivider" />
-
-          <IconButton
-            size="sm"
-            variant="plain"
-            color="neutral"
-            sx={{
-              borderRadius: 999,
-              px: 1,
-              py: 0.25,
-              color: "var(--text-secondary)",
-              pointerEvents: "none",
-              "&:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-          >
-            <VisibilityOutlinedIcon fontSize="small" />
-            <span className="ArticlePage__reactionCount">
-              {article.view_count}
-            </span>
-          </IconButton>
-        </div>
-      </div>
+      <ArticleComments articleId={id} articleAuthorId={article.author_id} />
     </div>
   );
 }

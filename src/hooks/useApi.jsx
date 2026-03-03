@@ -1,7 +1,13 @@
 // src/hooks/useApi.js
 import { useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
-import { ARTICLES_ENDPOINT, RATINGS_ENDPOINT, TAGS_ENDPOINT } from "../config/api";
+import {
+  ARTICLES_ENDPOINT,
+  RATINGS_ENDPOINT,
+  TAGS_ENDPOINT,
+  COMMENTS_ENDPOINT,
+  USERS_ENDPOINT,
+} from "../config/api";
 
 export function useApi() {
   const { token, refresh, logout } = useAuth();
@@ -112,6 +118,112 @@ export function useApi() {
     return res.json(); // { likes_count, dislikes_count, user_reaction }
   }
 
+  // ---------- комментарии ----------
+
+  const getArticleComments = useCallback(
+    async (articleId) => {
+      const resp = await authFetch(
+        `${COMMENTS_ENDPOINT}/articles/${articleId}`,
+        {
+          method: "GET",
+        }
+      );
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось загрузить комментарии");
+      }
+      return resp.json(); // список CommentTreeItem
+    },
+    [authFetch]
+  );
+
+  const createComment = useCallback(
+    async (articleId, payload, parentId = null) => {
+      const params = parentId ? `?parent_id=${parentId}` : "";
+      const resp = await authFetch(
+        `${COMMENTS_ENDPOINT}/articles/${articleId}${params}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload), // { text }
+        }
+      );
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось добавить комментарий");
+      }
+
+      return resp.json(); // CommentResponse
+    },
+    [authFetch]
+  );
+
+  const updateComment = useCallback(
+    async (commentId, payload) => {
+      const resp = await authFetch(`${COMMENTS_ENDPOINT}/${commentId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload), // { text }
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось обновить комментарий");
+      }
+
+      return resp.json(); // CommentResponse
+    },
+    [authFetch]
+  );
+
+  const deleteComment = useCallback(
+    async (commentId) => {
+      const resp = await authFetch(`${COMMENTS_ENDPOINT}/${commentId}`, {
+        method: "DELETE",
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось удалить комментарий");
+      }
+    },
+    [authFetch]
+  );
+
+  // ---------- юзеры из комментариев ----------
+  const getUserById = useCallback(
+    async (id) => {
+      const resp = await authFetch(`${USERS_ENDPOINT}/${id}`, {
+        method: "GET",
+      });
+      if (!resp.ok) {
+        throw new Error("Не удалось загрузить пользователя");
+      }
+      return resp.json(); // UserResponse
+    },
+    [authFetch]
+  );
+
+  // ---------- лайки комментариев ----------
+
+  async function toggleCommentReaction(commentId, type) {
+    const res = await authFetch(`${RATINGS_ENDPOINT}/comment/${commentId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Не удалось обновить реакцию комментария");
+    }
+    return res.json(); // { likes_count, dislikes_count, user_reaction }
+  }
+
   // ---------- теги ----------
 
   const getTagsByIds = useCallback(
@@ -135,6 +247,12 @@ export function useApi() {
     createArticle,
     updateArticle,
     toggleArticleReaction,
+    getArticleComments,
+    createComment,
+    updateComment,
+    deleteComment,
+    toggleCommentReaction,
     getTagsByIds,
+    getUserById
   };
 }

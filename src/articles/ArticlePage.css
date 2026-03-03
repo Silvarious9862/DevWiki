@@ -16,7 +16,7 @@
   background: var(--bg-card);
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  padding: 20px 24px;
+  padding: 20px  24px ;
 }
 
 .ArticlePage__headerRow {

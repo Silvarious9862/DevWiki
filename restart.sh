@@ -13,7 +13,7 @@ fuser -k 3000/tcp 2>/dev/null
 # Альтернатива, если fuser недоступен:
 # pkill -f "react-scripts start" 2>/dev/null
 
-sleep 60
+sleep 30
 
 # === ЗАПУСК ===
 echo "Запускаю npm start..."

@@ -1,0 +1,199 @@
+/* src/articles/ArticleComments.css */
+
+/* ----- Блок комментариев на странице ----- */
+
+.ArticleComments {
+  margin-top: 10px;
+}
+
+.ArticleComments__title {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0 0 12px;
+  color: var(--text-primary);
+}
+
+.ArticleComments__error {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+}
+
+.ArticleComments__authHint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.ArticleComments__rootForm {
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.ArticleComments__rootForm textarea {
+  box-sizing: border-box;      
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 240px;
+  padding: 8px 10px;          
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.ArticleComments__rootForm button {
+  
+}
+
+.ArticleComments__rootForm textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.ArticleComments__list {
+  margin-top: 8px;
+}
+
+.ArticleComments__empty,
+.ArticleComments__loading {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ----- Один комментарий + дерево ----- */
+
+.ArticleComments__commentWrapper {
+    margin-top: 12px;
+}
+
+/* карточка комментария */
+.ArticleComments__comment {
+    padding: 8px 0px 8px 10px;
+    border-radius: 4px;
+    background: transparent;
+}
+
+/* чуть смещаем вложенные карточки */
+.ArticleComments__comment--nested {
+    padding-left: 24px;          /* сдвиг содержимого */
+    position: relative;
+}
+
+/* вертикальная линия внутри вложенного блока */
+.ArticleComments__comment--nested::before {
+  content: "";
+  position: absolute;
+  left: 10px;                  /* отступ от левого края карточки */
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border-color);
+}
+
+/* контейнер для детей: вертикальная линия дерева */
+.ArticleComments__children {
+  margin-top: 4px;
+}
+
+/* заголовок строки: автор + дата */
+.ArticleComments__commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ArticleComments__commentAuthor {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.ArticleComments__commentDate {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.ArticleComments__commentText {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* панель действий и лайков */
+.ArticleComments__commentActions {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+
+}
+
+/* формы ответа / редактирования */
+.ArticleComments__replyForm,
+.ArticleComments__commentEditBlock {
+  margin-top: 8px;
+}
+
+.ArticleComments__replyForm textarea,
+.ArticleComments__commentEditBlock textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 200px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.ArticleComments__replyForm textarea:focus,
+.ArticleComments__commentEditBlock textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+
+/* кнопка удаления в стиле таблицы статей */
+
+.ArticleComments__deleteButton {
+  color: #fd4444;
+}
+
+.ArticleComments__deleteButton:hover {
+  background: #b91c1c;
+  color: #fee2e2;
+  transform: translateY(-0.5px);
+}
+
+.theme-light .ArticleComments__deleteButton {
+  color: #b91c1c;
+}
+
+.theme-light .ArticleComments__deleteButton:hover {
+  background: #fd4444;
+  color: var(--text-primary);
+}
+
+.ArticleComments__authorBadge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.4;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: default;
+}
