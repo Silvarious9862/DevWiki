@@ -16,6 +16,7 @@ from app.models import User, Article, Comment, Category, Tag, Attachment, Rating
 from app.ratings import router as ratings_router
 from app.tags import router as tags_router
 from app.comments import router as comments_router
+from app.users import router as users_router
 from app.schemas import (
     UserRegister, UserLogin, TokenResponse, UserResponse,
     ArticleCreate, ArticleUpdate, ArticleResponse, ArticleListItem, ArticleSearchParams, ArticlePublishUpdate,
@@ -35,6 +36,7 @@ app.include_router(articles_router)
 app.include_router(ratings_router)
 app.include_router(tags_router)
 app.include_router(comments_router)
+app.include_router(users_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)

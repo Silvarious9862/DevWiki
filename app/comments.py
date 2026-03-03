@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.db import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_optional_current_user
 from app.models import User
 
 router = APIRouter(
@@ -13,12 +13,29 @@ router = APIRouter(
 )
 
 
-def build_tree(rows: list[models.Comment]) -> list[schemas.CommentTreeItem]:
+def build_tree(
+    rows: list[models.Comment],
+    db: Session,
+    current_user: User | None,
+) -> list[schemas.CommentTreeItem]:
     by_id: dict[int, schemas.CommentTreeItem] = {}
     roots: list[schemas.CommentTreeItem] = []
 
-    # сначала превратим в DTO без children
     for c in rows:
+        user_reaction: str | None = None
+        if current_user is not None:
+            rating = (
+                db.query(models.Rating)
+                .filter(
+                    models.Rating.reactionable_type == "comment",
+                    models.Rating.reactionable_id == c.comment_id,
+                    models.Rating.user_id == current_user.user_id,
+                )
+                .first()
+            )
+            if rating:
+                user_reaction = rating.type
+
         item = schemas.CommentTreeItem(
             comment_id=c.comment_id,
             text=c.text,
@@ -30,11 +47,11 @@ def build_tree(rows: list[models.Comment]) -> list[schemas.CommentTreeItem]:
             dislikes_count=c.dislikes_count,
             created_at=c.created_at,
             updated_at=c.updated_at,
+            user_reaction=user_reaction,
             children=[],
         )
         by_id[c.comment_id] = item
 
-    # собираем дерево
     for item in by_id.values():
         if item.parent_id is None:
             roots.append(item)
@@ -47,7 +64,6 @@ def build_tree(rows: list[models.Comment]) -> list[schemas.CommentTreeItem]:
 
     return roots
 
-
 @router.get(
     "/articles/{article_id}",
     response_model=list[schemas.CommentTreeItem],
@@ -55,6 +71,7 @@ def build_tree(rows: list[models.Comment]) -> list[schemas.CommentTreeItem]:
 def list_article_comments(
     article_id: int,
     db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_current_user),
 ):
     """
     Комментарии к статье:
@@ -76,11 +93,12 @@ def list_article_comments(
     comments = (
         db.query(models.Comment)
         .filter(models.Comment.article_id == article_id)
-        .order_by(models.Comment.created_at.asc())
+        .order_by(models.Comment.created_at.desc())
         .all()
     )
 
-    return build_tree(comments)
+    return build_tree(comments, db=db, current_user=current_user)
+
 
 
 @router.post(

@@ -173,19 +173,18 @@ class ArticleSearchParams(BaseModel):
 
 # ============== Комментарии ==============
 class CommentTreeItem(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
     comment_id: int
     text: str
     article_id: int
     author_id: int
-    parent_id: int | None = None
+    parent_id: int | None
     depth: int
     likes_count: int
     dislikes_count: int
     created_at: datetime
-    updated_at: datetime
-    children: List["CommentTreeItem"] = []
+    updated_at: datetime | None = None
+    user_reaction: str | None = None
+    children: list["CommentTreeItem"] = []
 
 CommentTreeItem.model_rebuild()
 
@@ -209,6 +208,7 @@ class CommentResponse(BaseModel):
     author_id: int
     likes_count: int
     dislikes_count: int
+    user_reaction: str | None = None
     created_at: datetime
     updated_at: datetime
 
