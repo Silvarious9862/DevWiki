@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 from app import models, schemas
 from app.db import get_db
 from app.dependencies import get_current_user, get_optional_current_user, require_moderator
-from app.models import User, ArticleTag, Category
+from app.models import User, ArticleTag, Category, Comment
 
 router = APIRouter(
     prefix="/articles",
@@ -34,17 +34,34 @@ def list_articles(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
-    # базовый запрос сразу с join по автору
+    user_id = current_user.user_id if current_user is not None else -1
+
     q = (
         db.query(
             models.Article,
             User.login.label("author_login"),
             User.first_name.label("author_first_name"),
             User.last_name.label("author_last_name"),
-            Category.description.label("category_name")
+            Category.description.label("category_name"),
+            func.count(Comment.comment_id).label("comments_count"),
+            func.max(models.Rating.type).label("user_reaction"),
         )
         .join(User, User.user_id == models.Article.author_id)
         .outerjoin(Category, Category.category_id == models.Article.category_id)
+        .outerjoin(Comment, Comment.article_id == models.Article.article_id)
+        .outerjoin(
+            models.Rating,
+            (models.Rating.reactionable_type == "article")
+            & (models.Rating.reactionable_id == models.Article.article_id)
+            & (models.Rating.user_id == user_id),
+        )
+        .group_by(
+            models.Article.article_id,
+            User.login,
+            User.first_name,
+            User.last_name,
+            Category.description,
+        )
     )
 
     is_moderator = (
@@ -87,7 +104,16 @@ def list_articles(
     rows = q.offset(offset).limit(limit).all()
 
     items: list[schemas.ArticleListItem] = []
-    for article, author_login, author_first_name, author_last_name, category_name in rows:
+
+    for (
+        article,
+        author_login,
+        author_first_name,
+        author_last_name,
+        category_name,
+        comments_count,
+        user_reaction,
+    ) in rows:
         tag_ids = [
             at.tag_id
             for at in db.query(ArticleTag).filter(
@@ -111,12 +137,13 @@ def list_articles(
                 likes_count=article.likes_count,
                 dislikes_count=article.dislikes_count,
                 view_count=article.view_count,
+                comments_count=comments_count,
+                user_reaction=user_reaction,
                 tag_ids=tag_ids,
             )
         )
 
     return items
-
 
 
 @router.get(

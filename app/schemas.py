@@ -158,6 +158,7 @@ class ArticleListItem(BaseModel):
     likes_count: int
     dislikes_count: int
     view_count: int
+    comments_count: int
     user_reaction: str | None = None
     tag_ids: List[int] = []
 
