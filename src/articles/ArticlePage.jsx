@@ -5,6 +5,7 @@ import { useApi } from "../hooks/useApi";
 import { useBreadcrumbs } from "../layout/BreadcrumbContext";
 import { useAuth } from "../auth/AuthContext";
 import ArticleComments from "./ArticleComments";
+import ArticleTags from "./ArticleTags";
 
 import Button from "@mui/joy/Button";
 import IconButton from "@mui/joy/IconButton";
@@ -42,7 +43,7 @@ export default function ArticlePage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
-  const [tags, setTags] = useState([]);
+  const [setTags] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,19 +195,11 @@ export default function ArticlePage() {
         )}
       </div>
 
-      {tags.length > 0 && (
-        <div className="ArticlePage__tagsRow">
-          {tags.map((tag) => (
-            <span
-              key={tag.tag_id}
-              className="ArticlePage__tagChip ArticlePage__tagChip--clickable"
-              onClick={() => navigate(`/articles?tag_ids=${tag.tag_id}`)}
-            >
-              {tag.name}
-            </span>
-          ))}
-        </div>
-      )}
+      <ArticleTags
+        tagIds={article.tag_ids}
+        clickable={true}
+        onTagClick={(tag) => navigate(`/articles?tag_ids=${tag.tag_id || tag.id}`)}
+      />
 
       <article className="ArticlePage__content">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>

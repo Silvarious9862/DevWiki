@@ -107,7 +107,7 @@ export function useApi() {
 
   // ---------- лайки ----------
   async function toggleArticleReaction(articleId, type) {
-    const res = await authFetch(`${RATINGS_ENDPOINT}/articles/${articleId}`, {
+    const res = await authFetch(`${RATINGS_ENDPOINT}/article/${articleId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type }), // "like" | "dislike"

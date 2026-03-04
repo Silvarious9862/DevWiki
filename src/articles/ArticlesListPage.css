@@ -1,9 +1,11 @@
+/* Корневая обёртка страницы */
 .ArticlesListPage {
   padding: 24px 32px;
   background: var(--bg-primary);
   color: var(--text-primary);
 }
 
+/* Заголовок и кнопка "Создать новую" */
 .ArticlesListPage__header {
   margin-bottom: 16px;
 }
@@ -14,6 +16,45 @@
   color: var(--text-primary);
 }
 
+.ArticlesListPage__headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Кнопка создания статьи */
+.ArticlesListPage__newButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-primary);
+  background: var(--accent-primary);
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease,
+    color 0.15s ease;
+}
+
+.ArticlesListPage__newButton:hover {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  transform: translateY(-0.5px);
+}
+
+.theme-light .ArticlesListPage__newButton {
+  color: #111827;
+}
+
+/* Обёртка таблицы */
 .ArticlesListPage__tableWrapper {
   background: var(--bg-card);
   border-radius: 8px;
@@ -23,6 +64,7 @@
   overflow-y: hidden;
 }
 
+/* Таблица статей */
 .ArticlesTable {
   width: 100%;
   border-collapse: collapse;
@@ -50,16 +92,7 @@
   color: var(--text-primary);
 }
 
-.ArticlesTable tbody tr:hover {
-  background: var(--bg-secondary);
-  cursor: pointer;
-}
-
-.ArticlesTable__titleLink {
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
+/* Ховер по строке */
 .ArticlesTable__row {
   cursor: pointer;
 }
@@ -68,35 +101,96 @@
   background: var(--bg-secondary);
 }
 
-.ArticlesTable__statusCell {
-  text-align: center;
-  font-weight: 500;
+/* Ячейка "Название" с тремя строками */
+.ArticlesTable__cell-title {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-/* Общая плашка */
+.ArticlesTable__titleRow {
+  margin-bottom: 4px;
+}
+
+.ArticlesTable__titleText {
+  font-weight: 500;
+  color: var(--text-primary, #111);
+}
+
+.ArticlesTable th.ArticlesTable__nameHeader {
+
+}
+.ArticlesTable th.ArticlesTable__authorHeader {
+  width: 100px;
+}
+.ArticlesTable th.ArticlesTable__publishedHeader {
+  width: 125px;
+}
+.ArticlesTable th.ArticlesTable__editedHeader {
+  width: 125px;
+}
+
+/* мета: просмотры / лайки / комменты */
+.ArticlesTable__metaRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+  color: var(--text-muted, #777);
+}
+
+/* теги */
+.ArticlesTable__tagsRow {
+  margin-top: 2px;
+}
+
+/* Статус */
+.ArticlesTable th.ArticlesTable__statusHeader,
+.ArticlesTable th.ArticlesTable__actionsHeader {
+  text-align: center;
+  width: 75px;      
+  white-space: nowrap;
+}
+
+.ArticlesTable__statusCell,
+.ArticlesTable__cell-actions {
+  text-align: center;
+  border-left: 1px solid rgba(0, 0, 0, 0.03);
+  color: var(--text-muted, #777);
+  width: 75px;        
+}
+
+.ArticlesTable__cell-actions {
+  width: 75px;        
+  padding-left: 4px;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+
+/* Общая плашка статуса */
 .ArticlesTable td.ArticlesTable__statusCell--published span,
 .ArticlesTable td.ArticlesTable__statusCell--draft span {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 999px; /* максимально скруглённые */
+  border-radius: 999px;
   font-size: 12px;
   line-height: 1.4;
 }
 
 /* Опубликовано — зелёная плашка */
 .ArticlesTable td.ArticlesTable__statusCell--published span {
-  background: rgba(46, 125, 50, 0.15); /* мягкий фон */
+  background: rgba(46, 125, 50, 0.15);
   color: #2e7d32;
   border: 1px solid rgba(46, 125, 50, 0.6);
 }
 
-/* Черновик — плашка в цвет accent-primary */
+/* Черновик — оранжевая плашка */
 .ArticlesTable td.ArticlesTable__statusCell--draft span {
-  background: rgba(255, 119, 0, 0.15); 
+  background: rgba(255, 119, 0, 0.15);
   color: var(--accent-primary);
   border: 1px solid rgba(255, 119, 0, 0.6);
 }
-/* ----------------------------------------*/
+
+/* Кнопки действий */
 .ArticlesTable__actionIconButton {
   border: none;
   background: transparent;
@@ -107,7 +201,7 @@
   align-items: center;
   justify-content: center;
   transition: background 0.15s ease, transform 0.1s ease;
-  color: var(--text-primary); /* иконка в цвет текста */
+  color: var(--text-primary);
 }
 
 .ArticlesTable__actionIconButton svg {
@@ -115,19 +209,19 @@
   height: 16px;
 }
 
-/* hover-подсветка */
 .ArticlesTable__actionIconButton:hover {
   background: var(--accent-primary);
   transform: translateY(-0.5px);
 }
 
+/* Удаление — красная кнопка */
 .ArticlesTable__actionIconButton--delete {
   color: #fd4444;
 }
 
 .ArticlesTable__actionIconButton--delete:hover {
-  background: #b91c1c;   
-  color: #fee2e2;       
+  background: #b91c1c;
+  color: #fee2e2;
   transform: translateY(-0.5px);
 }
 
@@ -136,40 +230,9 @@
 }
 
 .theme-light .ArticlesTable__actionIconButton--delete:hover {
-  background: #fd4444;   /* светлый фон для light */
-  color: var(--text-primary);        /* более тёмная иконка */
+  background: #fd4444;
+  color: var(--text-primary);
 }
 
-.ArticlesListPage__headerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
 
-.ArticlesListPage__newButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--accent-primary);
-  background: var(--accent-primary);
-  color: #111827;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease,
-    transform 0.1s ease, color 0.15s ease;
-}
 
-.ArticlesListPage__newButton:hover {
-  background: var(--accent-secondary);
-  border-color: var(--accent-secondary);
-  transform: translateY(-0.5px);
-}
-
-.theme-light .ArticlesListPage__newButton {
-  color: #111827;
-}

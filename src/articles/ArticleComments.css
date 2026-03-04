@@ -30,29 +30,32 @@
   box-sizing: border-box;
 }
 
-.ArticleComments__rootForm textarea {
-  box-sizing: border-box;      
+.ArticleComments__textarea {
+  box-sizing: border-box;
   width: 100%;
-  resize: vertical;
-  min-height: 80px;
-  max-height: 240px;
-  padding: 8px 10px;          
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  overflow: hidden;
+  resize: none;
+  padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
+  line-height: 1.4;
 }
 
-.ArticleComments__rootForm button {
-  
-}
-
-.ArticleComments__rootForm textarea:focus {
+.ArticleComments__textarea:focus,
+.ArticleComments__textarea:focus-visible {
   outline: none;
-  border-color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
 }
+
+
+
 
 .ArticleComments__list {
   margin-top: 8px;

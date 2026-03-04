@@ -4,6 +4,10 @@ import { ARTICLES_ENDPOINT } from "../config/api";
 import { useAuth } from "../auth/AuthContext";
 import "./ArticlesListPage.css";
 
+import { ArticleStatsBadge } from "./ArticleStatsBadge";
+import { useApi } from "../hooks/useApi";
+import ArticleTags from "./ArticleTags";
+
 import { ReactComponent as EditIcon } from "../assets/icons/edit.svg";
 import { ReactComponent as ToggleIcon } from "../assets/icons/hide.svg";
 import { ReactComponent as DeleteIcon } from "../assets/icons/trash.svg";
@@ -12,6 +16,7 @@ function ArticlesListPage() {
   const navigate = useNavigate();
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { getTagsByIds } = useApi();
 
   const { user, token, isAuth, logout, refresh } = useAuth();
   const isModerator =
@@ -211,12 +216,12 @@ function ArticlesListPage() {
           <table className="ArticlesTable">
             <thead>
               <tr>
-                <th>Название</th>
-                <th>Автор</th>
-                <th>Опубликовано</th>
-                <th>Изменено</th>
-                {isModerator && <th>Статус</th>}
-                {isModerator && <th>Действия</th>}
+                <th className="ArticlesTable__nameHeader">Название</th>
+                <th className="ArticlesTable__authorHeader">Автор</th>
+                <th className="ArticlesTable__publishedHeader">Опубликовано</th>
+                {isModerator && <th className="ArticlesTable__editedHeader">Изменено</th>}
+                {isModerator && <th className="ArticlesTable__statusHeader">Статус</th>}
+                {isModerator && <th className="ArticlesTable__actionsHeader">Действия</th>}
               </tr>
             </thead>
             <tbody>
@@ -228,22 +233,46 @@ function ArticlesListPage() {
                     window.location.href = `/articles/${article.article_id}`;
                   }}
                 >
-                  <td>
-                    <Link
-                      to={`/articles/${article.article_id}`}
-                      className="ArticlesTable__titleLink"
+                  <td
+                    className="ArticlesTable__cell-title"
+                    onClick={() => navigate(`/articles/${article.article_id}`)}
+                  >
+                    <div className="ArticlesTable__titleRow">
+                      <div className="ArticlesTable__titleText">{article.title}</div>
+                    </div>
+
+                    <div className="ArticlesTable__metaRow">
+                      <ArticleStatsBadge
+                        viewCount={article.view_count}
+                        likesCount={article.likes_count}
+                        dislikesCount={article.dislikes_count}
+                        commentsCount={article.comments_count}
+                        userReaction={article.user_reaction}
+                      />
+                    </div>
+
+                    <div
+                      className="ArticlesTable__tagsRow"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {article.title}
-                    </Link>
+                      <ArticleTags
+                        tagIds={article.tag_ids}
+                        clickable={true}
+                        compact={true}
+                        onTagClick={(tag) =>
+                          navigate(`/articles?tag_ids=${tag.tag_id || tag.id}`)
+                        }
+                      />
+                    </div>
                   </td>
+
                   <td>{renderAuthor(article)}</td>
                   <td>
                     {formatDate(
                       article.published_at ?? article.created_at
                     )}
                   </td>
-                  <td>{formatDate(article.updated_at)}</td>
+                  {isModerator && <td>{formatDate(article.updated_at)}</td>}
                   {isModerator && (
                     <td
                       className={
@@ -262,7 +291,7 @@ function ArticlesListPage() {
                   )}
                   {isModerator && (
                     <td
-                      className="ArticlesTable__actionsCell"
+                      className="ArticlesTable__cell-actions"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button

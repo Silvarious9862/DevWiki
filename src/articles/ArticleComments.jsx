@@ -40,6 +40,13 @@ function CommentItem({
   const canEditOrDelete =
     currentUser && currentUser.user_id === comment.author_id;
 
+  const handleAutoResize = (e) => {
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+
+
   const handleReplySubmit = () => {
     if (!replyText.trim()) return;
     onReply(comment.comment_id, replyText);
@@ -104,13 +111,34 @@ function CommentItem({
             {isEditing ? (
               <div className="ArticleComments__commentEditBlock">
                 <textarea
-                  rows={3}
                   value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  style={{ width: "100%", marginTop: 4, marginBottom: 4 }}
+                  onChange={(e) => {
+                    handleAutoResize(e);
+                    setEditText(e.target.value);
+                  }}
+                  placeholder="Измените комментарий..."
+                  className="ArticleComments__textarea"
                 />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <Button size="sm" onClick={handleEditSubmit}>
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  <Button
+                    size="sm"
+                    onClick={handleEditSubmit}
+                    disabled={!editText.trim()}
+                    sx={{
+                      borderRadius: "999px",
+                      px: 1.75,
+                      py: 0.25,
+                      fontSize: 13,
+                      backgroundColor: "var(--accent-primary)",
+                      color: "var(--text-primary)",
+                      "&:hover": { backgroundColor: "var(--accent-secondary)" },
+                      "&:disabled": {
+                        opacity: 0.6,
+                        cursor: "default",
+                        backgroundColor: "var(--accent-primary)",
+                      },
+                    }}
+                  >
                     Сохранить
                   </Button>
                   <Button
@@ -121,16 +149,29 @@ function CommentItem({
                       setIsEditing(false);
                       setEditText(comment.text);
                     }}
+                    sx={{
+                      borderRadius: "999px",
+                      px: 1.75,
+                      py: 0.25,
+                      fontSize: 13,
+                      textTransform: "none",
+                      backgroundColor: "transparent",
+                      color: "var(--text-secondary)",
+                      "&:hover": {
+                        backgroundColor: "var(--bg-card)",
+                        color: "var(--accent-primary)",
+                      },
+                    }}
                   >
                     Отмена
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="ArticleComments__commentText">
-                {comment.text}
-              </div>
+              <div className="ArticleComments__commentText">{comment.text}</div>
             )}
+
+
 
             <div
               className="ArticleComments__commentActions"
@@ -262,26 +303,40 @@ function CommentItem({
         </div>
 
         {showReply && isAuth && depth < 7 && (
-          <div
-            className="ArticleComments__replyForm"
-            style={{ marginTop: 8, marginBottom: 8 }}
-          >
+          <div className="ArticleComments__replyForm" style={{ marginTop: 8, marginBottom: 8 }}>
             <textarea
-              rows={3}
               value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
+              onChange={(e) => {
+                handleAutoResize(e);
+                setReplyText(e.target.value);
+              }}
               placeholder="Ваш ответ..."
-              style={{ width: "100%", marginBottom: 4 }}
+              className="ArticleComments__textarea"
             />
             <Button
               size="sm"
               onClick={handleReplySubmit}
               disabled={!replyText.trim()}
+              sx={{
+                mt: 1,
+                borderRadius: "999px",
+                px: 1.5,
+                py: 0.25,
+                fontSize: 13,
+                backgroundColor: "var(--accent-primary)",
+                color: "var(--text-primary)",
+                "&:hover": { backgroundColor: "var(--accent-secondary)" },
+                "&:disabled": {
+                  opacity: 0.6,
+                  backgroundColor: "var(--accent-primary)",
+                },
+              }}
             >
               Отправить
             </Button>
           </div>
         )}
+
 
         {comment.children && comment.children.length > 0 && (
           <div className="ArticleComments__children">
@@ -385,6 +440,15 @@ export default function ArticleComments({ articleId, articleAuthorId }) {
     }
   };
 
+  const handleRootChange = (e) => {
+    const el = e.target;
+    // сбрасываем высоту, чтобы корректно посчитать scrollHeight
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+    setRootText(el.value);
+  };
+
+
   const handleReply = async (parentId, text) => {
     try {
       await createComment(articleId, { text }, parentId);
@@ -434,23 +498,39 @@ export default function ArticleComments({ articleId, articleAuthorId }) {
         </div>
       )}
 
+      
       {isAuth ? (
-        <div className="ArticleComments__rootForm" style={{ marginBottom: 16 }}>
+        <div className="ArticleComments__rootForm">
           <textarea
-            rows={4}
             value={rootText}
-            onChange={(e) => setRootText(e.target.value)}
+            onChange={handleRootChange}
             placeholder="Оставьте комментарий..."
+            className="ArticleComments__textarea"
           />
-          <Button onClick={handleCreateRoot} disabled={!rootText.trim()}>
+
+          <Button
+            onClick={handleCreateRoot}
+            disabled={!rootText.trim()}
+            sx={{
+              mt: 1,
+              borderRadius: "999px",
+              px: 1.75,
+              py: 0.25,
+              fontSize: 14,
+              backgroundColor: "var(--accent-primary)",
+              color: "var(--text-primary)",
+              "&:hover": { backgroundColor: "var(--accent-secondary)" },
+              "&:disabled": {
+                opacity: 0.6,
+                backgroundColor: "var(--accent-primary)",
+              },
+            }}
+          >
             Отправить
           </Button>
         </div>
       ) : (
-        <div
-          className="ArticleComments__authHint"
-          style={{ marginBottom: 16, color: "var(--text-secondary)" }}
-        >
+        <div className="ArticleComments__authHint">
           Войдите, чтобы оставлять комментарии и ставить оценки.
         </div>
       )}
