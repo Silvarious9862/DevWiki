@@ -6,8 +6,8 @@ import "./ArticleTags.css";
 export default function ArticleTags({
   tagIds,
   clickable = false,
-  onTagClick,         // опционально: (tag) => void
-  compact = false,    // для списка статей
+  onTagClick,
+  compact = false,
 }) {
   const { getTagsByIds } = useApi();
   const [tags, setTags] = useState([]);
@@ -39,36 +39,38 @@ export default function ArticleTags({
 
   return (
     <div
-        className="ArticleTags__row"
-        style={compact ? { marginBottom: 4 } : undefined}
+      className="ArticleTags__row"
+      style={compact ? { marginBottom: 4 } : undefined}
     >
-        {tags.map((tag) => {
+      {tags.map((tag) => {
         const className =
-            "ArticleTags__chip" +
-            (clickable ? " ArticleTags__chip--clickable" : "");
+          "ArticleTags__chip" +
+          (clickable ? " ArticleTags__chip--clickable" : "");
 
         const style = compact
-            ? { fontSize: 10, padding: "1px 8px" }
-            : undefined;
+          ? { fontSize: 10, padding: "1px 8px" }
+          : undefined;
 
         const handleClick = (e) => {
-            if (clickable && onTagClick) {
+          e.stopPropagation();           
+          if (clickable && onTagClick) {
             onTagClick(tag);
-            }
+          }
         };
 
         return (
-            <span
+          <span
             key={tag.tag_id || tag.id}
             className={className}
             style={style}
-            onClick={handleClick}
-            >
+            onClick={clickable ? handleClick : undefined}
+          >
             {tag.name}
-            </span>
+          </span>
         );
-        })}
+      })}
     </div>
-    );
+  );
+
 
 }

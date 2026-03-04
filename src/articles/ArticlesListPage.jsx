@@ -1,12 +1,17 @@
+// src/articles/ArticlesListPage.jsx
+
 import { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ARTICLES_ENDPOINT } from "../config/api";
 import { useAuth } from "../auth/AuthContext";
 import "./ArticlesListPage.css";
 
 import { ArticleStatsBadge } from "./ArticleStatsBadge";
-import { useApi } from "../hooks/useApi";
 import ArticleTags from "./ArticleTags";
+import ArticlesSearchBar, {
+  parseQuery,
+  buildQueryString,
+} from "./ArticlesSearchBar";
 
 import { ReactComponent as EditIcon } from "../assets/icons/edit.svg";
 import { ReactComponent as ToggleIcon } from "../assets/icons/hide.svg";
@@ -14,9 +19,10 @@ import { ReactComponent as DeleteIcon } from "../assets/icons/trash.svg";
 
 function ArticlesListPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { getTagsByIds } = useApi();
 
   const { user, token, isAuth, logout, refresh } = useAuth();
   const isModerator =
@@ -24,65 +30,98 @@ function ArticlesListPage() {
     user &&
     (user.role?.name === "moderator" || user.role_id === 2);
 
-  const loadArticles = useCallback(async () => {
-    const controller = new AbortController();
+  const loadArticles = useCallback(
+    async (filters = {}) => {
+      const controller = new AbortController();
 
-    try {
-      setIsLoading(true);
+      try {
+        setIsLoading(true);
 
-      const url = new URL(ARTICLES_ENDPOINT);
-      let currentToken = token;
+        const url = new URL(ARTICLES_ENDPOINT);
 
-      let res = await fetch(url.toString(), {
-        signal: controller.signal,
-        headers: currentToken
-          ? { Authorization: `Bearer ${currentToken}` }
-          : {},
-      });
-
-      if (res.status === 401 && refresh) {
-        const newToken = await refresh();
-        if (newToken) {
-          currentToken = newToken;
-          res = await fetch(url.toString(), {
-            signal: controller.signal,
-            headers: { Authorization: `Bearer ${currentToken}` },
-          });
-        } else {
-          await logout();
-          return;
+        if (filters.title) {
+          url.searchParams.append("query", filters.title);
         }
+        if (filters.tagIds && filters.tagIds.length > 0) {
+          filters.tagIds.forEach((id) =>
+            url.searchParams.append("tag_ids", String(id))
+          );
+        }
+
+        let currentToken = token;
+
+        let res = await fetch(url.toString(), {
+          signal: controller.signal,
+          headers: currentToken
+            ? { Authorization: `Bearer ${currentToken}` }
+            : {},
+        });
+
+        if (res.status === 401 && refresh) {
+          const newToken = await refresh();
+          if (newToken) {
+            currentToken = newToken;
+            res = await fetch(url.toString(), {
+              signal: controller.signal,
+              headers: { Authorization: `Bearer ${currentToken}` },
+            });
+          } else {
+            await logout();
+            return;
+          }
+        }
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+        setArticles(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          console.error("Failed to load articles", e);
+          setArticles([]);
+        }
+      } finally {
+        setIsLoading(false);
       }
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
+      return () => controller.abort();
+    },
+    [token, refresh, logout]
+  );
 
-      const data = await res.json();
-      setArticles(Array.isArray(data) ? data : []);
-    } catch (e) {
-      if (e.name !== "AbortError") {
-        console.error("Failed to load articles", e);
-        setArticles([]);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-
-    return () => controller.abort();
-  }, [token, refresh, logout]);
+  const initialRawQuery = searchParams.get("q") || "";
 
   useEffect(() => {
-    const abort = loadArticles();
-    // loadArticles возвращает функцию, но здесь мы можем
-    // просто проигнорировать или чуть поправить реализацию.
-    // Для простоты:
-    return () => {
-      if (typeof abort === "function") {
-        abort();
-      }
-    };
-  }, [loadArticles]);
+    const parsed = parseQuery(initialRawQuery);
+    loadArticles({ title: parsed.title, tagIds: parsed.tagIds });
+  }, [initialRawQuery, loadArticles]);
+
+  const handleSearch = ({ raw, title, tagIds }) => {
+    if (raw) {
+      setSearchParams({ q: raw });
+    } else {
+      setSearchParams({});
+    }
+    loadArticles({ title, tagIds });
+  };
+
+  const handleTagClick = (tag) => {
+    const id = tag.tag_id || tag.id;
+
+    const currentRaw = searchParams.get("q") || "";
+    const parsed = parseQuery(currentRaw);
+
+    const tagIdsSet = new Set(parsed.tagIds);
+    tagIdsSet.add(id);
+    const newTagIds = Array.from(tagIdsSet);
+
+    const newRaw = buildQueryString(parsed.title, newTagIds);
+
+    setSearchParams({ q: newRaw });
+    loadArticles({ title: parsed.title, tagIds: newTagIds });
+  };
 
   const handleTogglePublish = async (articleId) => {
     if (!token) return;
@@ -120,7 +159,6 @@ function ArticlesListPage() {
       }
 
       await res.json();
-      // после успешного toggle заново подгружаем список
       await loadArticles();
     } catch (e) {
       console.error("Failed to toggle publish", e);
@@ -129,7 +167,6 @@ function ArticlesListPage() {
 
   const handleDelete = async (articleId) => {
     if (!token) return;
-
     if (!window.confirm("Точно удалить статью?")) return;
 
     let currentToken = token;
@@ -162,7 +199,6 @@ function ArticlesListPage() {
         throw new Error(`HTTP ${res.status}`);
       }
 
-      // после удаления перезагружаем список
       await loadArticles();
     } catch (e) {
       console.error("Failed to delete article", e);
@@ -205,6 +241,11 @@ function ArticlesListPage() {
             </Link>
           )}
         </div>
+
+        <ArticlesSearchBar
+          initialQuery={initialRawQuery}
+          onSearch={handleSearch}
+        />
       </header>
 
       {isLoading ? (
@@ -219,9 +260,15 @@ function ArticlesListPage() {
                 <th className="ArticlesTable__nameHeader">Название</th>
                 <th className="ArticlesTable__authorHeader">Автор</th>
                 <th className="ArticlesTable__publishedHeader">Опубликовано</th>
-                {isModerator && <th className="ArticlesTable__editedHeader">Изменено</th>}
-                {isModerator && <th className="ArticlesTable__statusHeader">Статус</th>}
-                {isModerator && <th className="ArticlesTable__actionsHeader">Действия</th>}
+                {isModerator && (
+                  <th className="ArticlesTable__editedHeader">Изменено</th>
+                )}
+                {isModerator && (
+                  <th className="ArticlesTable__statusHeader">Статус</th>
+                )}
+                {isModerator && (
+                  <th className="ArticlesTable__actionsHeader">Действия</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -235,10 +282,14 @@ function ArticlesListPage() {
                 >
                   <td
                     className="ArticlesTable__cell-title"
-                    onClick={() => navigate(`/articles/${article.article_id}`)}
+                    onClick={() =>
+                      navigate(`/articles/${article.article_id}`)
+                    }
                   >
                     <div className="ArticlesTable__titleRow">
-                      <div className="ArticlesTable__titleText">{article.title}</div>
+                      <div className="ArticlesTable__titleText">
+                        {article.title}
+                      </div>
                     </div>
 
                     <div className="ArticlesTable__metaRow">
@@ -257,11 +308,9 @@ function ArticlesListPage() {
                     >
                       <ArticleTags
                         tagIds={article.tag_ids}
-                        clickable={true}
-                        compact={true}
-                        onTagClick={(tag) =>
-                          navigate(`/articles?tag_ids=${tag.tag_id || tag.id}`)
-                        }
+                        clickable
+                        compact
+                        onTagClick={handleTagClick}
                       />
                     </div>
                   </td>
@@ -272,7 +321,9 @@ function ArticlesListPage() {
                       article.published_at ?? article.created_at
                     )}
                   </td>
-                  {isModerator && <td>{formatDate(article.updated_at)}</td>}
+                  {isModerator && (
+                    <td>{formatDate(article.updated_at)}</td>
+                  )}
                   {isModerator && (
                     <td
                       className={
@@ -300,7 +351,9 @@ function ArticlesListPage() {
                         aria-label="Редактировать"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/articles/${article.article_id}/edit`);
+                          navigate(
+                            `/articles/${article.article_id}/edit`
+                          );
                         }}
                       >
                         <EditIcon />
@@ -310,7 +363,9 @@ function ArticlesListPage() {
                         type="button"
                         className="ArticlesTable__actionIconButton"
                         aria-label={
-                          article.is_published ? "Скрыть" : "Опубликовать"
+                          article.is_published
+                            ? "Скрыть"
+                            : "Опубликовать"
                         }
                         onClick={(e) => {
                           e.stopPropagation();

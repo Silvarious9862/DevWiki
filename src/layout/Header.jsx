@@ -1,14 +1,11 @@
 // src/layout/Header.js
 import React, { useState, useEffect } from "react";
-import { ReactComponent as SearchIcon } from "../assets/icons/search.svg";
 import { ReactComponent as NightIcon } from "../assets/icons/moon.svg";
 import { ReactComponent as DayIcon } from "../assets/icons/sun.svg";
 import { useAuth } from "../auth/AuthContext";
 import AuthDropdown from "../auth/AuthDropdown";
 
 function Header({ isDarkMode, onToggleTheme }) {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const { isAuth, user, logout } = useAuth();
   const [authDropdownMode, setAuthDropdownMode] = useState(null); // "login" | "register" | null
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -25,15 +22,6 @@ function Header({ isDarkMode, onToggleTheme }) {
 
   const handleToggleTheme = () => {
     onToggleTheme();
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    console.log("Поиск:", searchQuery);
   };
 
   const handleOpenLogin = (e) => {
@@ -61,19 +49,6 @@ function Header({ isDarkMode, onToggleTheme }) {
       <div className="header-logo">
         DEV WIKI
       </div>
-
-      <form className="header-search" onSubmit={handleSearchSubmit}>
-        <div className="search-wrapper">
-          <SearchIcon className="search-icon" />
-          <input
-            type="text"
-            placeholder="Найти все..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-        </div>
-      </form>
 
       <div className="header-user">
         <button
