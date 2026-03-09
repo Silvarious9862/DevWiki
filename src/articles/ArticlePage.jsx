@@ -43,7 +43,7 @@ export default function ArticlePage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userReaction, setUserReaction] = useState(null);
-  const [setTags] = useState([]);
+  const [tags, setTags] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +61,7 @@ export default function ArticlePage() {
           if (data.category_id && data.category_name) {
             crumbs.push({
               label: data.category_name,
-              href: `/articles?category_id=${data.category_id}`,
+              href: `/articles?category_id=${data.category_id}&category_name=${encodeURIComponent(data.category_name)}`,
             });
           }
           crumbs.push({ label: data.title });

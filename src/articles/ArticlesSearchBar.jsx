@@ -1,12 +1,30 @@
+// src/articles/ArticlesSearchBar.jsx
+
 import { useState, useEffect } from "react";
 import { ReactComponent as SearchIcon } from "../assets/icons/search.svg";
 import "./ArticlesSearchBar.css"
 
 export function parseQuery(raw) {
-  if (!raw) return { title: "", tagIds: [] };
+  if (!raw) return { title: "", tagIds: [], authorName: "", categoryName: "" };
 
   let title = raw;
   let tagIds = [];
+  let authorName = "";
+  let categoryName = "";
+
+  // author:"Имя Фамилия"
+  const authorMatch = raw.match(/author:\s*"([^"]+)"/);
+  if (authorMatch) {
+    authorName = authorMatch[1].trim();
+    title = title.replace(authorMatch[0], "").trim();
+  }
+
+  // category:"Название"
+  const categoryMatch = raw.match(/category:\s*"([^"]+)"/);
+  if (categoryMatch) {
+    categoryName = categoryMatch[1].trim();
+    title = title.replace(categoryMatch[0], "").trim();
+  }
 
   const arrayMatch = raw.match(/tag:\s*\[([^\]]*)\]/);
   if (arrayMatch) {
@@ -16,7 +34,7 @@ export function parseQuery(raw) {
       .map((s) => s.trim())
       .map(Number)
       .filter((n) => !Number.isNaN(n));
-    title = raw.replace(arrayMatch[0], "").trim();
+    title = title.replace(arrayMatch[0], "").trim();
   }
 
   const singleMatches = [...title.matchAll(/tag:\s*(\d+)/g)];
@@ -28,12 +46,22 @@ export function parseQuery(raw) {
     title = title.replace(/tag:\s*\d+/g, "").trim();
   }
 
-  return { title, tagIds };
+  title = title.replace(/author:\s*"[^"]*"/g, "").trim();
+
+  return { title, tagIds, authorName, categoryName };
 }
 
-export function buildQueryString(title, tagIds) {
+
+export function buildQueryString(title, tagIds, authorName, categoryName) {
   const parts = [];
-  if (title && title.trim()) parts.push(title.trim());
+
+  if (authorName && authorName.trim()) {
+    parts.push(`author:"${authorName.trim()}"`);
+  }
+
+  if (categoryName && categoryName.trim()) {
+    parts.push(`category:"${categoryName.trim()}"`);
+  }
 
   if (tagIds && tagIds.length > 0) {
     const unique = Array.from(new Set(tagIds));
@@ -43,6 +71,7 @@ export function buildQueryString(title, tagIds) {
       parts.push(`tag:[${unique.join(",")}]`);
     }
   }
+  if (title && title.trim()) parts.push(title.trim());
 
   return parts.join(" ");
 }
@@ -62,37 +91,42 @@ export default function ArticlesSearchBar({ initialQuery = "", onSearch }) {
 
   const handleClear = () => {
     setValue("");
-    onSearch({ raw: "", title: "", tagIds: [] });
+    onSearch({
+      raw: "",
+      title: "",
+      tagIds: [],
+      authorName: "",
+      categoryName: "",
+    });
   };
 
   const showClear = value && value.length > 0;
 
   return (
     <form className="ArticlesSearchBar" onSubmit={handleSubmit}>
-        <div className="ArticlesSearchBar__field">
+      <div className="ArticlesSearchBar__field">
         <SearchIcon className="ArticlesSearchBar__icon" />
         <input
-            type="text"
-            className="ArticlesSearchBar__input"
-            placeholder='Поиск по статьям: "markdown", "tag:7" или "tag:[1,7]"'
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+          type="text"
+          className="ArticlesSearchBar__input"
+          placeholder={'Поиск по статьям: "markdown", "tag:7" или author:"Имя Фамилия"'}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
         />
         {showClear && (
-            <button
+          <button
             type="button"
             className="ArticlesSearchBar__clear"
             onClick={handleClear}
             aria-label="Сбросить поиск"
-            >
+          >
             ×
-            </button>
+          </button>
         )}
         <button type="submit" className="ArticlesSearchBar__submit">
-            Найти
+          Найти
         </button>
-        </div>
+      </div>
     </form>
-    );
-
+  );
 }

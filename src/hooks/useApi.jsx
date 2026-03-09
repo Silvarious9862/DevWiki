@@ -7,6 +7,7 @@ import {
   TAGS_ENDPOINT,
   COMMENTS_ENDPOINT,
   USERS_ENDPOINT,
+  CATEGORIES_ENDPOINT,
 } from "../config/api";
 
 export function useApi() {
@@ -209,6 +210,24 @@ export function useApi() {
     [authFetch]
   );
 
+  // ---------- юзеры для поиска ----------
+  const resolveAuthorByName = useCallback(
+    async (name) => {
+      const params = new URLSearchParams({ name });
+      const resp = await authFetch(`${USERS_ENDPOINT}/resolve-author?${params.toString()}`, {
+        method: "GET",
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось найти автора");
+      }
+
+      return resp.json(); // { id: number }
+    },
+    [authFetch]
+  );
+
   // ---------- лайки комментариев ----------
 
   async function toggleCommentReaction(commentId, type) {
@@ -242,6 +261,25 @@ export function useApi() {
     [authFetch]
   );
 
+  // ---------- категории name -> id ----------
+  const resolveCategoryByName = useCallback(
+    async (name) => {
+      const params = new URLSearchParams({ name });
+      const resp = await authFetch(
+        `${CATEGORIES_ENDPOINT}/resolve-category?${params.toString()}`,
+        { method: "GET" }
+      );
+
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(text || "Не удалось найти категорию");
+      }
+
+      return resp.json(); // { id: number }
+    },
+    [authFetch]
+  );
+
   return {
     getArticle,
     createArticle,
@@ -253,6 +291,8 @@ export function useApi() {
     deleteComment,
     toggleCommentReaction,
     getTagsByIds,
-    getUserById
+    getUserById,
+    resolveAuthorByName,
+    resolveCategoryByName,
   };
 }

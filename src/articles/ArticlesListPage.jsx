@@ -12,6 +12,7 @@ import ArticlesSearchBar, {
   parseQuery,
   buildQueryString,
 } from "./ArticlesSearchBar";
+import { useApi } from "../hooks/useApi";
 
 import { ReactComponent as EditIcon } from "../assets/icons/edit.svg";
 import { ReactComponent as ToggleIcon } from "../assets/icons/hide.svg";
@@ -25,6 +26,8 @@ function ArticlesListPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { user, token, isAuth, logout, refresh } = useAuth();
+  const { resolveAuthorByName, resolveCategoryByName } = useApi();
+
   const isModerator =
     isAuth &&
     user &&
@@ -42,10 +45,19 @@ function ArticlesListPage() {
         if (filters.title) {
           url.searchParams.append("query", filters.title);
         }
+
         if (filters.tagIds && filters.tagIds.length > 0) {
           filters.tagIds.forEach((id) =>
             url.searchParams.append("tag_ids", String(id))
           );
+        }
+
+        if (filters.authorId) {
+          url.searchParams.append("author_id", String(filters.authorId));
+        }
+
+        if (filters.categoryId) {
+          url.searchParams.append("category_id", String(filters.categoryId));
         }
 
         let currentToken = token;
@@ -91,37 +103,175 @@ function ArticlesListPage() {
     [token, refresh, logout]
   );
 
+  const [authorId, setAuthorId] = useState(null);
+  const [authorError, setAuthorError] = useState("");
+
   const initialRawQuery = searchParams.get("q") || "";
 
-  useEffect(() => {
-    const parsed = parseQuery(initialRawQuery);
-    loadArticles({ title: parsed.title, tagIds: parsed.tagIds });
-  }, [initialRawQuery, loadArticles]);
+  
+  const initialCategoryId = searchParams.get("category_id");
+  const initialCategoryNameParam = searchParams.get("category_name");
+  const initialCategoryName = initialCategoryNameParam
+    ? decodeURIComponent(initialCategoryNameParam)
+    : "";
+  const parsedInitial = parseQuery(initialRawQuery);
 
-  const handleSearch = ({ raw, title, tagIds }) => {
-    if (raw) {
-      setSearchParams({ q: raw });
-    } else {
-      setSearchParams({});
-    }
-    loadArticles({ title, tagIds });
-  };
+  const effectiveInitialCategoryName =
+    initialCategoryName || parsedInitial.categoryName || "";
+
+  const composedInitialQuery = buildQueryString(
+    parsedInitial.title,
+    parsedInitial.tagIds,
+    parsedInitial.authorName,
+    effectiveInitialCategoryName
+  );
+
+  const handleSearch = useCallback(
+    async ({
+      raw,
+      title,
+      tagIds,
+      authorName,
+      categoryName,
+      categoryId,
+    }) => {
+      setAuthorError("");
+
+      let nextAuthorId = null;
+      let nextCategoryId = categoryId ?? null;
+
+      // 1. Резолвим категорию по имени, если id нет
+      if (categoryName && !nextCategoryId) {
+        try {
+          const cat = await resolveCategoryByName(categoryName.trim());
+          nextCategoryId = cat.id;
+        } catch (e) {
+          console.error("Failed to resolve category", e);
+          nextCategoryId = null;
+        }
+      }
+
+      // 2. Обновляем URL
+      const params = {};
+      if (raw) params.q = raw;
+      if (nextCategoryId) params.category_id = String(nextCategoryId);
+      if (categoryName) params.category_name = encodeURIComponent(categoryName);
+      setSearchParams(params);
+
+      // 3. Если автор не указан — title/tags/category
+      if (!authorName || !authorName.trim()) {
+        await loadArticles({
+          title,
+          tagIds,
+          categoryId: nextCategoryId || undefined,
+        });
+        return;
+      }
+
+      // 4. Автор указан — резолвим автора
+      try {
+        const data = await resolveAuthorByName(authorName.trim());
+        nextAuthorId = data.id;
+        setAuthorId(nextAuthorId);
+      } catch (e) {
+        console.error("Failed to resolve author", e);
+        setAuthorId(null);
+        setAuthorError("Автор не найден");
+        return;
+      }
+
+      // 5. Поиск с author_id и category_id
+      await loadArticles({
+        title,
+        tagIds,
+        authorId: nextAuthorId,
+        categoryId: nextCategoryId || undefined,
+      });
+    },
+    [loadArticles, resolveAuthorByName, resolveCategoryByName, setSearchParams]
+  );
+
+  useEffect(() => {
+    const parsed = parsedInitial;
+
+    const categoryId = initialCategoryId ? Number(initialCategoryId) : undefined;
+
+    loadArticles({
+      title: parsed.title,
+      tagIds: parsed.tagIds,
+      categoryId,
+    });
+  }, [initialRawQuery, initialCategoryId, initialCategoryName, loadArticles]);
+
+
 
   const handleTagClick = (tag) => {
     const id = tag.tag_id || tag.id;
 
     const currentRaw = searchParams.get("q") || "";
-    const parsed = parseQuery(currentRaw);
+    const parsed = parseQuery(currentRaw); // { title, tagIds, authorName, categoryName }
 
     const tagIdsSet = new Set(parsed.tagIds);
     tagIdsSet.add(id);
     const newTagIds = Array.from(tagIdsSet);
 
-    const newRaw = buildQueryString(parsed.title, newTagIds);
+    // если категории нет в q, берём из URL
+    const effectiveCategoryName =
+      parsed.categoryName || initialCategoryName || "";
 
-    setSearchParams({ q: newRaw });
-    loadArticles({ title: parsed.title, tagIds: newTagIds });
+    const newRaw = buildQueryString(
+      parsed.title,
+      newTagIds,
+      parsed.authorName,
+      effectiveCategoryName
+    );
+
+    handleSearch({
+      raw: newRaw,
+      title: parsed.title,
+      tagIds: newTagIds,
+      authorName: parsed.authorName,
+      categoryName: effectiveCategoryName,
+    });
   };
+
+  const renderAuthor = (article) => {
+    if (article.author_first_name || article.author_last_name) {
+      return `${article.author_first_name ?? ""} ${
+        article.author_last_name ?? ""
+      }`.trim();
+    }
+    return article.author_login ?? "—";
+  };
+
+  const handleAuthorClick = async (article, e) => {
+    e.stopPropagation();
+
+    const name = renderAuthor(article);
+    if (!name || name === "—") return;
+
+    const currentRaw = searchParams.get("q") || "";
+    const parsed = parseQuery(currentRaw); // title, tagIds, authorName, categoryName
+
+    const effectiveCategoryName =
+      parsed.categoryName || initialCategoryName || "";
+
+    const newRaw = buildQueryString(
+      parsed.title,
+      parsed.tagIds,
+      name,                 // новый автор
+      effectiveCategoryName
+    );
+
+    await handleSearch({
+      raw: newRaw,
+      title: parsed.title,
+      tagIds: parsed.tagIds,
+      authorName: name,
+      categoryName: effectiveCategoryName,
+    });
+  };
+
 
   const handleTogglePublish = async (articleId) => {
     if (!token) return;
@@ -217,15 +367,6 @@ function ArticlesListPage() {
     return `${date} ${time}`;
   };
 
-  const renderAuthor = (article) => {
-    if (article.author_first_name || article.author_last_name) {
-      return `${article.author_first_name ?? ""} ${
-        article.author_last_name ?? ""
-      }`.trim();
-    }
-    return article.author_login ?? "—";
-  };
-
   return (
     <div className="ArticlesListPage">
       <header className="ArticlesListPage__header">
@@ -243,9 +384,13 @@ function ArticlesListPage() {
         </div>
 
         <ArticlesSearchBar
-          initialQuery={initialRawQuery}
+          initialQuery={composedInitialQuery}
           onSearch={handleSearch}
         />
+
+        {authorError && (
+          <p className="ArticlesListPage__error">{authorError}</p>
+        )}
       </header>
 
       {isLoading ? (
@@ -315,7 +460,12 @@ function ArticlesListPage() {
                     </div>
                   </td>
 
-                  <td>{renderAuthor(article)}</td>
+                  <td
+                    className="ArticlesTable__author"
+                    onClick={(e) => handleAuthorClick(article, e)}
+                  >
+                    {renderAuthor(article)}
+                  </td>
                   <td>
                     {formatDate(
                       article.published_at ?? article.created_at

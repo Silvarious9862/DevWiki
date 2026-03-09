@@ -37,11 +37,6 @@
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.1s ease,
-    color 0.15s ease;
 }
 
 .ArticlesListPage__newButton:hover {
@@ -234,5 +229,34 @@
   color: var(--text-primary);
 }
 
+.ArticlesTable__author:hover {
+  color: var(--accent-primary);
+}
 
+.ArticlesListPage__error {
 
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--accent-primary);
+  background-color: rgba(255, 149, 0, 0.08); /* мягкий фон под акцент */
+  border: 1px solid rgba(255, 149, 0, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ArticlesListPage__error::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
