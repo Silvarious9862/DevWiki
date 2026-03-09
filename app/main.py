@@ -10,6 +10,7 @@ from typing import List, Optional
 from app.articles import router as articles_router
 from app.auth import router as auth_router
 from app.categories import router as categories_router
+from app.dashboard_stats import router as dashboard_stats_router
 from app.db import get_db
 from app.health import check_app, check_db, check_front
 from app.health import router as health_router
@@ -39,6 +40,7 @@ app.include_router(tags_router)
 app.include_router(comments_router)
 app.include_router(users_router)
 app.include_router(categories_router)
+app.include_router(dashboard_stats_router)
 
 # Создаём папку uploads если её нет
 os.makedirs("uploads", exist_ok=True)
