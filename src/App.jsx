@@ -7,6 +7,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import ArticlesListPage from "./articles/ArticlesListPage";
 import ArticlePage from "./articles/ArticlePage";
 import ArticleEditor from "./articles/ArticleEditor"
+import DashboardPage from "./dashboard/DashboardPage";
 
 function App() {
   return (
@@ -19,8 +20,7 @@ function App() {
               path="/"
               element={
                 <MainLayout>
-                  <h1>Главная на Dev Wiki</h1>
-                  <p>Lorem ipsum dolor sit amet</p>
+                  <DashboardPage />
                 </MainLayout>
               }
             />

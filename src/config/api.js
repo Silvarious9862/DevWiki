@@ -9,3 +9,4 @@ export const TAGS_ENDPOINT = `${API_BASE_URL}/tags`;
 export const COMMENTS_ENDPOINT = `${API_BASE_URL}/comments`; 
 export const USERS_ENDPOINT = `${API_BASE_URL}/users`;
 export const CATEGORIES_ENDPOINT = `${API_BASE_URL}/categories`;
+export const DASHBOARD_ENDPOINT = `${API_BASE_URL}/dashboard`;

@@ -8,6 +8,7 @@ import {
   COMMENTS_ENDPOINT,
   USERS_ENDPOINT,
   CATEGORIES_ENDPOINT,
+  DASHBOARD_ENDPOINT,
 } from "../config/api";
 
 export function useApi() {
@@ -280,6 +281,25 @@ export function useApi() {
     [authFetch]
   );
 
+  // ---------- дашборд ----------
+  const getStats = useCallback(async () => {
+    const res = await authFetch(`${DASHBOARD_ENDPOINT}/stats`);
+    if (!res.ok) throw new Error("Не удалось загрузить статистику");
+    return res.json();
+  }, [authFetch]);
+
+  const getNewArticles = useCallback(async () => {
+    const res = await authFetch(`${DASHBOARD_ENDPOINT}/new-articles`);
+    if (!res.ok) throw new Error("Не удалось загрузить новые статьи");
+    return res.json();
+  }, [authFetch]);
+
+  const getTopAuthors = useCallback(async () => {
+    const res = await authFetch(`${DASHBOARD_ENDPOINT}/top-authors`);
+    if (!res.ok) throw new Error("Не удалось загрузить топ авторов");
+    return res.json();
+  }, [authFetch]);
+
   return {
     getArticle,
     createArticle,
@@ -294,5 +314,8 @@ export function useApi() {
     getUserById,
     resolveAuthorByName,
     resolveCategoryByName,
+    getStats,
+    getNewArticles,
+    getTopAuthors,
   };
 }

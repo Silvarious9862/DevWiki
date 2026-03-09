@@ -1,0 +1,19 @@
+/* src/dashboard/Dashboard.css */
+.DashboardCard {
+  background-color: var(--bg-card);
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.DashboardCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* единый внутренний паддинг */
+.DashboardCard__content {
+  padding: 12px 14px 14px;
+}
