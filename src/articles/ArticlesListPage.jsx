@@ -244,6 +244,35 @@ function ArticlesListPage() {
     return article.author_login ?? "—";
   };
 
+  const handleCategoryClick = (article, e) => {
+    e.stopPropagation();
+
+    const categoryName = article.category_name;
+    if (!categoryName) {
+      navigate(`/articles/${article.article_id}`);
+      return;
+    }
+
+    const currentRaw = searchParams.get("q") || "";
+    const parsed = parseQuery(currentRaw); // { title, tagIds, authorName, categoryName }
+
+    // Подставляем категорию из статьи
+    const newRaw = buildQueryString(
+      parsed.title,
+      parsed.tagIds,
+      parsed.authorName,
+      categoryName
+    );
+
+    handleSearch({
+      raw: newRaw,
+      title: parsed.title,
+      tagIds: parsed.tagIds,
+      authorName: parsed.authorName,
+      categoryName,
+    });
+  };
+
   const handleAuthorClick = async (article, e) => {
     e.stopPropagation();
 
@@ -403,6 +432,7 @@ function ArticlesListPage() {
             <thead>
               <tr>
                 <th className="ArticlesTable__nameHeader">Название</th>
+                <th className="ArticlesTable__categoryHeader">Категория</th>
                 <th className="ArticlesTable__authorHeader">Автор</th>
                 <th className="ArticlesTable__publishedHeader">Опубликовано</th>
                 {isModerator && (
@@ -458,6 +488,13 @@ function ArticlesListPage() {
                         onTagClick={handleTagClick}
                       />
                     </div>
+                  </td>
+                  
+                  <td
+                    className="ArticlesTable__category"
+                    onClick={(e) => handleCategoryClick(article, e)}
+                  >
+                    {article.category_name || "—"}
                   </td>
 
                   <td

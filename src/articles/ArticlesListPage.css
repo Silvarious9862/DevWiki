@@ -114,6 +114,11 @@
 .ArticlesTable th.ArticlesTable__nameHeader {
 
 }
+
+
+.ArticlesTable th.ArticlesTable__categoryHeader {
+  width: 200px;
+}
 .ArticlesTable th.ArticlesTable__authorHeader {
   width: 100px;
 }
@@ -229,6 +234,8 @@
   color: var(--text-primary);
 }
 
+.ArticlesTable__titleText:hover,
+.ArticlesTable__category:hover,
 .ArticlesTable__author:hover {
   color: var(--accent-primary);
 }
