@@ -2,8 +2,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.models import Base
+import os
 
-DATABASE_URL = "postgresql://wiki_user:wikidb@192.168.100.10:5432/wiki"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://wiki_user:wikidb@localhost:5432/wiki")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
