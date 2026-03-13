@@ -35,7 +35,6 @@ CREATE TABLE users (
     last_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT TRUE,
-    is_admin BOOLEAN DEFAULT FALSE,
     role_id INTEGER REFERENCES roles(role_id)
 );
 
@@ -121,7 +120,6 @@ CREATE TABLE ratings (
 CREATE INDEX idx_users_login ON users(login);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_is_active ON users(is_active);
-CREATE INDEX idx_users_is_admin ON users(is_admin);
 
 -- Индексы для статей
 CREATE INDEX idx_articles_title ON articles(title);
@@ -164,9 +162,9 @@ INSERT INTO roles (name, description) VALUES
 
 -- Тестовый администратор (пароль: admin123)
 -- В продакшене пароль должен быть захэширован через bcrypt
-INSERT INTO users (login, email, password_hash, first_name, last_name, is_admin, role_id) VALUES 
-    ('admin', 'admin@devwiki.local', '$2b$12$placeholder_hash_admin123', 'Admin', 'User', TRUE, 2),
-    ('testuser', 'user@devwiki.local', '$2b$12$placeholder_hash_user123', 'Test', 'User', FALSE, 1);
+INSERT INTO users (login, email, password_hash, first_name, last_name, role_id) VALUES 
+    ('admin', 'admin@devwiki.local', '$2b$12$placeholder_hash_admin123', 'Admin', 'User', 2),
+    ('testuser', 'user@devwiki.local', '$2b$12$placeholder_hash_user123', 'Test', 'User', 1);
 
 -- Базовые категории
 INSERT INTO categories (name, description) VALUES
@@ -205,7 +203,6 @@ COMMENT ON TABLE comments IS 'Комментарии к статьям';
 COMMENT ON TABLE attachments IS 'Вложенные файлы и изображения к статьям';
 COMMENT ON TABLE ratings IS 'Лайки и дизлайки для статей и комментариев';
 
-COMMENT ON COLUMN users.is_admin IS 'Флаг администратора/модератора';
 COMMENT ON COLUMN articles.is_published IS 'Опубликована ли статья (видна всем)';
 COMMENT ON COLUMN articles.view_count IS 'Количество просмотров статьи';
 COMMENT ON COLUMN ratings.reactionable_type IS 'Тип объекта: article или comment';
