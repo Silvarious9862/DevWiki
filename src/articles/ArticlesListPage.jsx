@@ -18,12 +18,17 @@ import { ReactComponent as EditIcon } from "../assets/icons/edit.svg";
 import { ReactComponent as ToggleIcon } from "../assets/icons/hide.svg";
 import { ReactComponent as DeleteIcon } from "../assets/icons/trash.svg";
 
+import Pagination from "../components/Pagination";
+
 function ArticlesListPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const { user, token, isAuth, logout, refresh } = useAuth();
   const { resolveAuthorByName, resolveCategoryByName } = useApi();
@@ -60,6 +65,13 @@ function ArticlesListPage() {
           url.searchParams.append("category_id", String(filters.categoryId));
         }
 
+        // Всегда явно передаём page снаружи
+        url.searchParams.append(
+          "page",
+          String(filters.page ?? 1)
+        );
+        url.searchParams.append("limit", "10");
+
         let currentToken = token;
 
         let res = await fetch(url.toString(), {
@@ -88,7 +100,9 @@ function ArticlesListPage() {
         }
 
         const data = await res.json();
-        setArticles(Array.isArray(data) ? data : []);
+
+        setArticles(Array.isArray(data.items) ? data.items : []);
+        setTotalPages(data.total_pages ?? 1);
       } catch (e) {
         if (e.name !== "AbortError") {
           console.error("Failed to load articles", e);
@@ -103,12 +117,13 @@ function ArticlesListPage() {
     [token, refresh, logout]
   );
 
+
   const [authorId, setAuthorId] = useState(null);
   const [authorError, setAuthorError] = useState("");
 
   const initialRawQuery = searchParams.get("q") || "";
 
-  
+
   const initialCategoryId = searchParams.get("category_id");
   const initialCategoryNameParam = searchParams.get("category_name");
   const initialCategoryName = initialCategoryNameParam
@@ -136,6 +151,7 @@ function ArticlesListPage() {
       categoryId,
     }) => {
       setAuthorError("");
+      setPage(1);
 
       let nextAuthorId = null;
       let nextCategoryId = categoryId ?? null;
@@ -164,6 +180,7 @@ function ArticlesListPage() {
           title,
           tagIds,
           categoryId: nextCategoryId || undefined,
+          page: 1,
         });
         return;
       }
@@ -186,6 +203,7 @@ function ArticlesListPage() {
         tagIds,
         authorId: nextAuthorId,
         categoryId: nextCategoryId || undefined,
+        page: 1,
       });
     },
     [loadArticles, resolveAuthorByName, resolveCategoryByName, setSearchParams]
@@ -193,15 +211,15 @@ function ArticlesListPage() {
 
   useEffect(() => {
     const parsed = parsedInitial;
-
     const categoryId = initialCategoryId ? Number(initialCategoryId) : undefined;
 
     loadArticles({
       title: parsed.title,
       tagIds: parsed.tagIds,
       categoryId,
+      page,
     });
-  }, [initialRawQuery, initialCategoryId, initialCategoryName, loadArticles]);
+  }, [initialRawQuery, initialCategoryId, initialCategoryName, page, loadArticles]);
 
 
 
@@ -237,9 +255,8 @@ function ArticlesListPage() {
 
   const renderAuthor = (article) => {
     if (article.author_first_name || article.author_last_name) {
-      return `${article.author_first_name ?? ""} ${
-        article.author_last_name ?? ""
-      }`.trim();
+      return `${article.author_first_name ?? ""} ${article.author_last_name ?? ""
+        }`.trim();
     }
     return article.author_login ?? "—";
   };
@@ -384,6 +401,20 @@ function ArticlesListPage() {
     }
   };
 
+  const handlePageChange = (nextPage) => {
+    setPage(nextPage);
+
+    const parsed = parsedInitial;
+    const categoryId = initialCategoryId ? Number(initialCategoryId) : undefined;
+
+    loadArticles({
+      title: parsed.title,
+      tagIds: parsed.tagIds,
+      categoryId,
+      page: nextPage,
+    });
+  };
+
   const formatDate = (iso) => {
     if (!iso) return "-";
     const d = new Date(iso);
@@ -489,7 +520,7 @@ function ArticlesListPage() {
                       />
                     </div>
                   </td>
-                  
+
                   <td
                     className="ArticlesTable__category"
                     onClick={(e) => handleCategoryClick(article, e)}
@@ -580,6 +611,13 @@ function ArticlesListPage() {
             </tbody>
           </table>
         </div>
+      )}
+      {!isLoading && articles.length > 0 && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onChange={handlePageChange}
+        />
       )}
     </div>
   );

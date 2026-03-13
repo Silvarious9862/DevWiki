@@ -102,7 +102,7 @@ export default function DashboardNewArticles({ items }) {
                       fontSize: 12,
                       color: "var(--text-secondary)",
                       mb: 0.5,
-                      marginTop: 1,
+                      marginTop: 2,
                     }}
                   >
                     {a.author_name}
