@@ -16,7 +16,7 @@
   background: var(--bg-card);
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  padding: 20px 24px;
+  padding: 20px  24px ;
 }
 
 .ArticlePage__headerRow {
@@ -136,4 +136,38 @@
   background: var(--border-color);
   opacity: 0.6;
   margin: 0 4px;
+}
+
+/* теги */
+.ArticlePage__tagsRow {
+  margin-top: 4px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ArticlePage__tagChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.4;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+/* если тег кликабельный (переход к списку статей по тегу) */
+.ArticlePage__tagChip--clickable {
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ArticlePage__tagChip--clickable:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
 }
