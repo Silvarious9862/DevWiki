@@ -1,0 +1,330 @@
+/* src/articles/ArticleEditor.css */
+
+.ArticleEditorPage {
+  padding: 24px 32px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 70vh;
+}
+
+/* Заголовок страницы */
+
+.ArticleEditorPage__header {
+  margin-bottom: 16px;
+}
+
+.ArticleEditorPage__header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.ArticleEditorPage__subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Двухколоночный layout: форма + превью */
+
+.ArticleEditorPage__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 3fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* Карточки */
+
+.ArticleEditorPage__card {
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  padding: 20px 24px 0;
+}
+
+.ArticleEditorPage__card--form,
+.ArticleEditorPage__card--preview {
+  height: 100%;
+}
+
+.ArticleEditorPage__card--preview {
+  max-width: 960px;
+}
+
+/* Ошибка */
+
+.ArticleEditorPage__error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #f87171;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+/* Поля формы */
+
+.ArticleEditorForm__field {
+  margin-bottom: 12px;
+}
+
+.ArticleEditorForm__field--editor {
+  margin-bottom: 8px;
+}
+
+.ArticleEditorForm__label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.ArticleEditorForm__input,
+.ArticleEditorForm__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+/* textarea фиксированной высоты, только скролл */
+
+.ArticleEditorForm__textarea {
+  height: 480px;
+  resize: none;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  overflow: auto;
+}
+
+.ArticleEditorForm__input:focus,
+.ArticleEditorForm__textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-secondary);
+}
+
+/* Редактор */
+
+.ArticleEditorForm__editorTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ArticleEditorForm__editorLabels {
+  display: flex;
+  align-items: baseline;
+}
+
+.ArticleEditorForm__editorPane {
+  display: flex;
+}
+
+/* Нижняя панель формы */
+
+.ArticleEditorForm__footerRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.ArticleEditorForm__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* wrapper для split-кнопки и меню */
+
+.ArticleEditorForm__splitButtonWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* split-кнопка: две части */
+
+.ArticleEditorSplitButton__main,
+.ArticleEditorSplitButton__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  height: 36px;
+}
+
+/* левая часть – текст */
+
+.ArticleEditorSplitButton__main {
+  padding: 0 14px 0 16px;
+  border-radius: 999px 0 0 999px;
+}
+
+/* правая часть – стрелка */
+
+.ArticleEditorSplitButton__toggle {
+  width: 32px;
+  padding: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+/* выпадающее меню */
+
+.ArticleEditorForm__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  min-width: 220px;
+  z-index: 20;
+  padding: 4px 0;
+}
+
+.ArticleEditorForm__menuItem {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.ArticleEditorForm__menuItem:hover {
+  background: var(--accent-primary);
+}
+
+.ArticleEditorForm__menuItem:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Кнопка «Показать/Скрыть превью» */
+
+.ArticleEditorForm__previewToggle {
+  border-radius: 999px !important;
+  padding: 4px 14px !important;
+  font-size: 13px !important;
+  text-transform: none !important;
+  border: 1px solid var(--accent-primary) !important;
+}
+
+/* активное состояние: превью открыто — только outline */
+
+.ArticleEditorForm__previewToggle.ArticleEditorForm__previewToggle--active {
+  background-color: transparent !important;
+  color: var(--accent-primary) !important;
+}
+
+/* неактивное: превью скрыто — заливка accent-primary */
+
+.ArticleEditorForm__previewToggle:not(.ArticleEditorForm__previewToggle--active) {
+  background-color: var(--accent-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Правая карточка: предпросмотр */
+
+.ArticleEditorPreview__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ArticleEditorPreview__title {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* область превью фиксированной высоты, только скролл */
+
+.ArticleEditorPreview__scroll {
+  height: 650px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+/* типографика в превью */
+
+.ArticleEditorPreview__scroll h1,
+.ArticleEditorPreview__scroll h2,
+.ArticleEditorPreview__scroll h3 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.ArticleEditorPreview__scroll p {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.ArticleEditorPreview__scroll a {
+  color: var(--accent-primary);
+}
+
+/* код и таблицы в превью */
+
+.ArticleEditorPreview__scroll code,
+.ArticleEditorPreview__scroll pre {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.theme-light .ArticleEditorPreview__scroll pre,
+.theme-light .ArticleEditorPreview__scroll code {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+}
+
+.ArticleEditorPreview__scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+}
+
+.ArticleEditorPreview__scroll th,
+.ArticleEditorPreview__scroll td {
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+}
+
+.ArticleEditorPreview__scroll blockquote {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent-primary);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}

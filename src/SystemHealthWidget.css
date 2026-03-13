@@ -1,0 +1,64 @@
+.health-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 1vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.health-title {
+  margin-bottom: 16px;
+}
+
+.health-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.health-widget {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  width: 220px;
+  background-color: var(--bg-card);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.health-widget-title {
+  margin-bottom: 12px;
+}
+
+.status-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.status-label {
+  font-weight: 600;
+  width: 80px;
+  text-align: center;
+}
+
+.status-value {
+  font-weight: 600;
+  margin-left: 8px;
+  text-align: left;
+}
+
+/* состояние ошибки подключения */
+.health-root-error {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+.health-widget-error {
+  border-color: #ff5555;
+}
+.health-error-text {
+  color: #ff5555;
+  font-weight: 700;
+}

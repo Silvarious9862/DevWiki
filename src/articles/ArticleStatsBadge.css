@@ -1,0 +1,24 @@
+/* ArticleStatsBadge.css */
+.article-stats {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+
+}
+
+.article-stats__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-secondary, #666);
+}
+
+.article-stats__value {
+
+  line-height: 1;
+}
+
+/* активная (выбранная) реакция */
+.article-stats__item--active {
+  color: var(--accent-primary);
+}

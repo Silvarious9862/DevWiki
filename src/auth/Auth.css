@@ -1,0 +1,231 @@
+/* Кнопки авторизации в хедере */
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.auth-button-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.auth-btn {
+  padding: 6px 14px;
+  border-radius: 12px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.auth-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(255, 119, 0, 0.18);
+}
+
+.auth-btn:active {
+  border-color: var(--accent-secondary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Войти — спокойная */
+.auth-btn.login-btn {
+  /* базовый стиль */
+}
+
+/* Зарегистрироваться — акцентная */
+.auth-btn.register-btn {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #000;
+}
+
+.auth-btn.register-btn:hover {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  color: #000;
+}
+
+/* Tooltip‑дропдаун */
+
+.auth-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 12px 14px 14px;
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  z-index: 1000;
+}
+
+.auth-dropdown-arrow {
+  position: absolute;
+  top: -7px;
+  right: 26px; /* центр под кнопкой */
+  width: 14px;
+  height: 14px;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
+  transform: rotate(45deg);
+}
+
+.auth-dropdown-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+
+/* Форма */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.auth-field span {
+  color: var(--text-secondary);
+}
+
+.auth-field input {
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);  /* фон под тему */
+  color: var(--text-primary);
+}
+
+.auth-field input::placeholder {
+  color: var(--text-muted);
+}
+
+.auth-field input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(255, 119, 0, 0.18);
+}
+
+.auth-error {
+  color: #ff6b6b;
+  font-size: 12px;
+}
+
+.auth-submit {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.auth-submit:hover {
+    background: var(--accent-secondary);
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* Блок профиля пользователя в хедере */
+
+.user-profile {
+  position: relative;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.user-profile-button {
+  padding: 6px 14px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.user-profile-button:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 2px rgba(255, 119, 0, 0.18);
+}
+
+.user-profile-button:active {
+  border-color: var(--accent-secondary);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.user-profile-caret {
+  margin-left: 6px;
+  font-size: 10px;
+}
+
+/* Выпадающее меню профиля */
+
+.user-profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 4px 0;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  z-index: 1000;
+}
+
+.user-profile-menu-item {
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-profile-menu-item:hover {
+  color: var(--accent-primary);
+}
