@@ -77,18 +77,25 @@ class CategoryResponse(BaseModel):
 
 # ============== Теги ==============
 class TagCreate(BaseModel):
-    """Схема создания тега"""
     name: str
 
+class TagUpdate(BaseModel):
+    name: str
 
 class TagResponse(BaseModel):
-    """Схема ответа с данными тега"""
     model_config = ConfigDict(from_attributes=True)
-
+    
     tag_id: int
     name: str
     created_at: datetime
 
+class TagWithCountResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    tag_id: int
+    name: str
+    created_at: datetime
+    articles_count: int
 
 # ============== Статьи ==============
 class ArticleCreate(BaseModel):
@@ -130,6 +137,7 @@ class ArticleResponse(BaseModel):
     dislikes_count: int
     view_count: int
     user_reaction: str | None = None
+    tag_ids: List[int] = []
 
 
 class ArticleListItem(BaseModel):
@@ -150,8 +158,17 @@ class ArticleListItem(BaseModel):
     likes_count: int
     dislikes_count: int
     view_count: int
+    comments_count: int
     user_reaction: str | None = None
+    tag_ids: List[int] = []
 
+class PaginatedArticles(BaseModel):
+    """Схема списка статей с пагинацией"""
+    items: List[ArticleListItem]
+    total_items: int
+    page: int
+    limit: int
+    total_pages: int
 
 class ArticleSearchParams(BaseModel):
     """Параметры поиска статей"""
@@ -163,6 +180,22 @@ class ArticleSearchParams(BaseModel):
 
 
 # ============== Комментарии ==============
+class CommentTreeItem(BaseModel):
+    comment_id: int
+    text: str
+    article_id: int
+    author_id: int
+    parent_id: int | None
+    depth: int
+    likes_count: int
+    dislikes_count: int
+    created_at: datetime
+    updated_at: datetime | None = None
+    user_reaction: str | None = None
+    children: list["CommentTreeItem"] = []
+
+CommentTreeItem.model_rebuild()
+
 class CommentCreate(BaseModel):
     """Схема создания комментария"""
     text: str
@@ -183,6 +216,7 @@ class CommentResponse(BaseModel):
     author_id: int
     likes_count: int
     dislikes_count: int
+    user_reaction: str | None = None
     created_at: datetime
     updated_at: datetime
 

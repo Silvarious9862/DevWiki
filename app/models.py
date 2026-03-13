@@ -83,9 +83,14 @@ class Article(Base):
     comments = relationship("Comment", back_populates="article", cascade="all, delete-orphan")
     article_tags = relationship("ArticleTag", back_populates="article", cascade="all, delete-orphan")
     attachments = relationship("Attachment", back_populates="article", cascade="all, delete-orphan")
-    ratings = relationship("Rating", back_populates="article", cascade="all, delete-orphan",
-                          foreign_keys="[Rating.reactionable_id]",
-                          primaryjoin="and_(Article.article_id==Rating.reactionable_id, Rating.reactionable_type=='article')")
+    ratings = relationship(
+        "Rating",
+        back_populates="article",
+        cascade="all, delete-orphan",
+        foreign_keys="[Rating.reactionable_id]",
+        primaryjoin="and_(Article.article_id==Rating.reactionable_id, Rating.reactionable_type=='article')",
+        overlaps="article,comment,ratings",
+    )
 
 
 class ArticleTag(Base):
@@ -108,6 +113,8 @@ class Comment(Base):
     text = Column(Text, nullable=False)
     article_id = Column(Integer, ForeignKey("articles.article_id", ondelete="CASCADE"), nullable=False)
     author_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    parent_id = Column(Integer, ForeignKey("comments.comment_id"), nullable=True)   
+    depth = Column(Integer, default=0, nullable=False)                            
     likes_count = Column(Integer, default=0)
     dislikes_count = Column(Integer, default=0)
     created_at = Column(TIMESTAMP, default=datetime.now)
@@ -115,9 +122,15 @@ class Comment(Base):
 
     article = relationship("Article", back_populates="comments")
     author = relationship("User", back_populates="comments")
-    ratings = relationship("Rating", back_populates="comment", cascade="all, delete-orphan",
-                          foreign_keys="[Rating.reactionable_id]",
-                          primaryjoin="and_(Comment.comment_id==Rating.reactionable_id, Rating.reactionable_type=='comment')")
+    children = relationship("Comment")  
+    ratings = relationship(
+        "Rating",
+        back_populates="comment",
+        cascade="all, delete-orphan",
+        foreign_keys="[Rating.reactionable_id]",
+        primaryjoin="and_(Comment.comment_id==Rating.reactionable_id, Rating.reactionable_type=='comment')",
+        overlaps="article,comment,ratings",
+    )
 
 
 class Attachment(Base):

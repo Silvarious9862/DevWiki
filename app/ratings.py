@@ -1,3 +1,4 @@
+# app/ratings.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -12,51 +13,73 @@ router = APIRouter(
 )
 
 
+def _get_target_model(reactionable_type: str):
+    if reactionable_type == "article":
+        return models.Article
+    if reactionable_type == "comment":
+        return models.Comment
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Неверный тип сущности для реакции",
+    )
+
+
 @router.post(
-    "/articles/{article_id}",
+    "/{reactionable_type}/{reactionable_id}",
     response_model=schemas.RatingToggleResponse,
 )
-def toggle_article_rating(
-    article_id: int,
+def toggle_rating(
+    reactionable_type: str,
+    reactionable_id: int,
     payload: schemas.RatingCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Универсальный переключатель лайк/дизлайк
+    - reactionable_type: article | comment
+    - reactionable_id: id статьи или комментария
+    """
     if payload.type not in ("like", "dislike"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Неверный тип реакции",
         )
 
-    article = (
-        db.query(models.Article)
-        .filter(models.Article.article_id == article_id)
+    Model = _get_target_model(reactionable_type)
+
+    target = (
+        db.query(Model)
+        .filter(
+            Model.article_id == reactionable_id
+            if reactionable_type == "article"
+            else Model.comment_id == reactionable_id
+        )
         .first()
     )
-    if article is None:
+    if target is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Статья не найдена",
+            detail="Сущность не найдена",
         )
 
     existing = (
         db.query(models.Rating)
         .filter(
-            models.Rating.reactionable_type == "article",
-            models.Rating.reactionable_id == article_id,
+            models.Rating.reactionable_type == reactionable_type,
+            models.Rating.reactionable_id == reactionable_id,
             models.Rating.user_id == current_user.user_id,
         )
         .first()
     )
 
-    # Логика:
     # 1) не было реакции -> создаём
-    # 2) была такая же -> снимаем (toggle off)
+    # 2) была такая же -> снимаем
     # 3) была другая -> меняем type
     if existing is None:
         rating = models.Rating(
-            reactionable_type="article",
-            reactionable_id=article_id,
+            reactionable_type=reactionable_type,
+            reactionable_id=reactionable_id,
             user_id=current_user.user_id,
             type=payload.type,
         )
@@ -76,8 +99,8 @@ def toggle_article_rating(
     likes_count = (
         db.query(models.Rating)
         .filter(
-            models.Rating.reactionable_type == "article",
-            models.Rating.reactionable_id == article_id,
+            models.Rating.reactionable_type == reactionable_type,
+            models.Rating.reactionable_id == reactionable_id,
             models.Rating.type == "like",
         )
         .count()
@@ -85,16 +108,17 @@ def toggle_article_rating(
     dislikes_count = (
         db.query(models.Rating)
         .filter(
-            models.Rating.reactionable_type == "article",
-            models.Rating.reactionable_id == article_id,
+            models.Rating.reactionable_type == reactionable_type,
+            models.Rating.reactionable_id == reactionable_id,
             models.Rating.type == "dislike",
         )
         .count()
     )
 
-    article.likes_count = likes_count
-    article.dislikes_count = dislikes_count
-    db.add(article)
+    # Обновляем агрегаты у статьи или комментария
+    target.likes_count = likes_count
+    target.dislikes_count = dislikes_count
+    db.add(target)
     db.commit()
 
     return schemas.RatingToggleResponse(
