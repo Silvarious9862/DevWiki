@@ -21,7 +21,7 @@ router = APIRouter(
 
 @router.get(
     "",
-    response_model=List[schemas.ArticleListItem],
+    response_model=schemas.PaginatedArticles,
 )
 def list_articles(
     query: Optional[str] = Query(None),
@@ -30,7 +30,7 @@ def list_articles(
     tag_ids: Optional[List[int]] = Query(None),
     is_published: Optional[bool] = Query(None),
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
 ):
@@ -98,9 +98,9 @@ def list_articles(
             .group_by(models.Article.article_id)
         )
 
+    total_items = q.count()
     offset = (page - 1) * limit
     q = q.order_by(models.Article.created_at.desc())
-
     rows = q.offset(offset).limit(limit).all()
 
     items: list[schemas.ArticleListItem] = []
@@ -142,8 +142,16 @@ def list_articles(
                 tag_ids=tag_ids,
             )
         )
+    
+    total_pages = max((total_items + limit - 1) // limit, 1)
 
-    return items
+    return schemas.PaginatedArticles(
+        items=items,
+        total_items=total_items,
+        page=page,
+        limit=limit,
+        total_pages=total_pages,
+    )
 
 
 @router.get(

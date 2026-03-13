@@ -162,6 +162,13 @@ class ArticleListItem(BaseModel):
     user_reaction: str | None = None
     tag_ids: List[int] = []
 
+class PaginatedArticles(BaseModel):
+    """Схема списка статей с пагинацией"""
+    items: List[ArticleListItem]
+    total_items: int
+    page: int
+    limit: int
+    total_pages: int
 
 class ArticleSearchParams(BaseModel):
     """Параметры поиска статей"""
