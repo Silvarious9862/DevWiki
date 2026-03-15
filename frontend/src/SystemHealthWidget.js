@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./SystemHealthWidget.css";
+import { API_BASE } from "./config/api"
+const HEALTH_URL = `${API_BASE}/health`;
 
 function StatusBadge({ label, status }) {
   const emoji = status === "ok" ? "🟢" : "🔴";
@@ -19,7 +21,7 @@ function SystemHealthWidget() {
   const [connectionError, setConnectionError] = useState(false);
 
   const fetchHealth = () => {
-    fetch("http://192.168.100.20:8000/health")
+    fetch(HEALTH_URL)
       .then((res) => res.json())
       .then((data) => {
         setConnectionError(false);

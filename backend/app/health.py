@@ -5,7 +5,7 @@ from app.db import engine
 
 import httpx
 
-FRONTEND_HOST = "http://192.168.100.30:3000"
+FRONTEND_HOST = "http://frontend"
 
 router = APIRouter(tags=["health"])
 

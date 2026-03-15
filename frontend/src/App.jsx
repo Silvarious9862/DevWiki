@@ -8,6 +8,8 @@ import ArticlesListPage from "./articles/ArticlesListPage";
 import ArticlePage from "./articles/ArticlePage";
 import ArticleEditor from "./articles/ArticleEditor"
 import DashboardPage from "./dashboard/DashboardPage";
+import About from "./components/About"
+import FAQ from "./components/FAQ"
 
 function App() {
   return (
@@ -75,6 +77,24 @@ function App() {
               }
             />
 
+            { /* FAQ */} 
+            <Route
+              path="/faq"
+              element={
+                <MainLayout disableBreadcrumbs>
+                  <FAQ />
+                </MainLayout>
+              }
+            />
+            { /* About */} 
+            <Route
+              path="/about"
+              element={
+                <MainLayout disableBreadcrumbs>
+                  <About />
+                </MainLayout>
+              }
+            />
             { /* 404 */} 
             <Route
               path="*"
